@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded transition duration-300;
+  }
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded transition duration-300;
+  }
+}

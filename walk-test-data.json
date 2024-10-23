@@ -1,0 +1,202 @@
+[
+  {
+    "title": "Samphire Hoe Country Park",
+    "slug": "samphire-hoe-country-park",
+    "rating": 4.7,
+    "address": "Dover CT17 9FL, United Kingdom",
+    "overview": "A beautiful coastal park with stunning views of the English Channel. Dogs are welcome, and there are plenty of open spaces for them to explore.",
+    "website": "https://www.samphirehoe.com",
+    "image": "https://source.unsplash.com/random/800x600/?coastal,park",
+    "featured": true,
+    "duration": "1-2 hours",
+    "difficulty": "Easy",
+    "coordinates": {
+      "lat": 51.0978,
+      "lng": 1.2969
+    },
+    "seo": {
+      "metaTitle": "Samphire Hoe Country Park - Dog-Friendly Coastal Walk in Dover",
+      "metaDescription": "Explore Samphire Hoe Country Park with your dog. Enjoy stunning views of the English Channel and open spaces perfect for canine adventures."
+    }
+  },
+  {
+    "title": "Whinless Down",
+    "slug": "whinless-down",
+    "rating": 4.7,
+    "address": "211 Elms Vale Rd, Dover CT17 9PR, United Kingdom",
+    "overview": "This area offers open grasslands and wooded paths, perfect for dogs to run freely. Open 24 hours.",
+    "website": "https://www.dover.gov.uk/Leisure-Culture-Tourism/Leisure-Facilities/Parks-Open-Spaces/Whinless-Down.aspx",
+    "image": "https://source.unsplash.com/random/800x600/?grassland,woods",
+    "featured": false,
+    "duration": "1-3 hours",
+    "difficulty": "Moderate",
+    "coordinates": {
+      "lat": 51.1261,
+      "lng": 1.2839
+    },
+    "seo": {
+      "metaTitle": "Whinless Down - 24/7 Dog-Friendly Walk in Dover",
+      "metaDescription": "Discover Whinless Down, a dog walker's paradise with open grasslands and wooded paths. Enjoy off-leash adventures any time of day."
+    }
+  },
+  {
+    "title": "The White Cliffs of Dover",
+    "slug": "white-cliffs-of-dover",
+    "rating": 4.8,
+    "address": "Langdon Cliffs, Upper Road, Dover CT16 1HJ, United Kingdom",
+    "overview": "Iconic cliffs with breathtaking views and numerous trails. Dogs are allowed on leads, especially near livestock.",
+    "website": "https://www.nationaltrust.org.uk/visit/kent/white-cliffs-dover",
+    "image": "https://source.unsplash.com/random/800x600/?white,cliffs",
+    "featured": true,
+    "duration": "2-4 hours",
+    "difficulty": "Moderate",
+    "coordinates": {
+      "lat": 51.1295,
+      "lng": 1.3089
+    },
+    "seo": {
+      "metaTitle": "The White Cliffs of Dover - Scenic Dog Walks with Breathtaking Views",
+      "metaDescription": "Experience the iconic White Cliffs of Dover with your dog. Enjoy stunning views and numerous trails while keeping your furry friend on a lead."
+    }
+  },
+  {
+    "title": "Barton Path Riverside Walk",
+    "slug": "barton-path-riverside-walk",
+    "rating": 4.1,
+    "address": "Charlton Grn, Dover CT16 2NQ, United Kingdom",
+    "overview": "A pleasant riverside walk that is accessible at all hours, providing a peaceful environment for you and your dog.",
+    "website": null,
+    "image": "https://source.unsplash.com/random/800x600/?riverside,path",
+    "featured": false,
+    "duration": "30 minutes - 1 hour",
+    "difficulty": "Easy",
+    "coordinates": {
+      "lat": 51.1361,
+      "lng": 1.3003
+    },
+    "seo": {
+      "metaTitle": "Barton Path Riverside Walk - Peaceful Dog Walk in Dover",
+      "metaDescription": "Enjoy a tranquil riverside stroll with your dog at Barton Path. Open 24/7, this easy walk offers a serene environment for you and your pet."
+    }
+  },
+  {
+    "title": "Bushy Ruff Country Park",
+    "slug": "bushy-ruff-country-park",
+    "rating": 4.6,
+    "address": "1 Kearsney Ct, Alkham Rd, Temple Ewell, Dover CT16 3EB, United Kingdom",
+    "overview": "A lovely park with diverse landscapes and walking paths ideal for dogs.",
+    "website": "https://www.dover.gov.uk/Leisure-Culture-Tourism/Leisure-Facilities/Parks-Open-Spaces/Bushy-Ruff.aspx",
+    "image": "https://source.unsplash.com/random/800x600/?country,park",
+    "featured": true,
+    "duration": "1-2 hours",
+    "difficulty": "Easy",
+    "coordinates": {
+      "lat": 51.1528,
+      "lng": 1.2672
+    },
+    "seo": {
+      "metaTitle": "Bushy Ruff Country Park - Diverse Dog Walking Paths in Dover",
+      "metaDescription": "Explore Bushy Ruff Country Park with your dog. Enjoy varied landscapes and walking paths perfect for canine adventures near Dover."
+    }
+  },
+  {
+    "title": "St John's Secure Dog Walking Field",
+    "slug": "st-johns-secure-dog-walking-field",
+    "rating": 4.4,
+    "address": "1 St Johns Cottages, Dover CT15 7HG, United Kingdom",
+    "overview": "A secure area specifically designed for dog walking, allowing dogs to play off-lead in a safe environment.",
+    "website": null,
+    "image": "https://source.unsplash.com/random/800x600/?dog,field",
+    "featured": false,
+    "duration": "30 minutes - 1 hour",
+    "difficulty": "Easy",
+    "coordinates": {
+      "lat": 51.1589,
+      "lng": 1.2439
+    },
+    "seo": {
+      "metaTitle": "St John's Secure Dog Walking Field - Safe Off-Lead Area in Dover",
+      "metaDescription": "Let your dog run free at St John's Secure Dog Walking Field. A safe, enclosed space for off-lead play and exercise near Dover."
+    }
+  },
+  {
+    "title": "Singledge Lane Woods",
+    "slug": "singledge-lane-woods",
+    "rating": 4.3,
+    "address": "Singledge Ln, Shepherdswell, Dover CT15 5AF, UK",
+    "overview": "A public footpath through woods with both on-lead and off-lead areas available for dogs.",
+    "website": null,
+    "image": "https://source.unsplash.com/random/800x600/?woods,path",
+    "featured": false,
+    "duration": "1-2 hours",
+    "difficulty": "Moderate",
+    "coordinates": {
+      "lat": 51.1872,
+      "lng": 1.2372
+    },
+    "seo": {
+      "metaTitle": "Singledge Lane Woods - Varied Dog Walking Experience in Dover",
+      "metaDescription": "Discover Singledge Lane Woods, offering a mix of on-lead and off-lead areas for dogs. Enjoy wooded paths and natural surroundings near Dover."
+    }
+  },
+  {
+    "title": "Dover to Deal Coastal Walk",
+    "slug": "dover-to-deal-coastal-walk",
+    "rating": 4.7,
+    "address": "Dover to Deal Coastal Path, Kent, UK",
+    "overview": "A scenic linear walk along the coast that includes historical sites like castles and breathtaking views of the sea. Suitable for dogs but requires caution near cliff edges.",
+    "website": "https://www.nationaltrail.co.uk/en_GB/trails/england-coast-path-south-east/trail-sections/dover-to-deal/",
+    "image": "https://source.unsplash.com/random/800x600/?coastal,path",
+    "featured": true,
+    "duration": "4-5 hours",
+    "difficulty": "Challenging",
+    "coordinates": {
+      "lat": 51.1295,
+      "lng": 1.3089
+    },
+    "seo": {
+      "metaTitle": "Dover to Deal Coastal Walk - Scenic Dog-Friendly Trail",
+      "metaDescription": "Embark on a breathtaking coastal journey from Dover to Deal with your dog. Enjoy historical sites and sea views on this challenging 10-mile walk."
+    }
+  },
+  {
+    "title": "Cinderhill Wood and Nature Reserve",
+    "slug": "cinderhill-wood-and-nature-reserve",
+    "rating": 4.6,
+    "address": "Cinderhill Wood, Dover, Kent, UK",
+    "overview": "A serene woodland area perfect for nature walks with your dog.",
+    "website": null,
+    "image": "https://source.unsplash.com/random/800x600/?woodland,nature",
+    "featured": false,
+    "duration": "1-2 hours",
+    "difficulty": "Easy",
+    "coordinates": {
+      "lat": 51.1561,
+      "lng": 1.2894
+    },
+    "seo": {
+      "metaTitle": "Cinderhill Wood and Nature Reserve - Peaceful Dog Walks in Dover",
+      "metaDescription": "Explore the tranquil Cinderhill Wood and Nature Reserve with your dog. Enjoy serene woodland walks and diverse wildlife near Dover."
+    }
+  },
+  {
+    "title": "Barden Lake",
+    "slug": "barden-lake",
+    "rating": 4.6,
+    "address": "Tonbridge TN11 9AS, United Kingdom",
+    "overview": "A picturesque lake surrounded by walking paths where dogs can enjoy the outdoors.",
+    "website": null,
+    "image": "https://source.unsplash.com/random/800x600/?lake,path",
+    "featured": false,
+    "duration": "1-2 hours",
+    "difficulty": "Easy",
+    "coordinates": {
+      "lat": 51.1967,
+      "lng": 0.2831
+    },
+    "seo": {
+      "metaTitle": "Barden Lake - Scenic Dog-Friendly Walks in Tonbridge",
+      "metaDescription": "Discover Barden Lake's beautiful surroundings with your dog. Enjoy lakeside paths and outdoor adventures near Tonbridge."
+    }
+  }
+]
