@@ -6,13 +6,64 @@ const baseURL = import.meta.env.PROD
   : `${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/api`;  // Development API endpoint
 
 const strapiAPI = axios.create({
- baseURL,
- headers: {
-   'Content-Type': 'application/json',
-   'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN}`
- },
- timeout: 10000 
+  baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN}`
+  },
+  timeout: 10000 
 });
+
+// Detailed token verification
+console.log('Token Verification:', {
+  isTokenPresent: !!process.env.STRAPI_API_TOKEN,
+  tokenPreview: process.env.STRAPI_API_TOKEN ? 
+    `Bearer ${process.env.STRAPI_API_TOKEN.substring(0, 6)}...` : 
+    'No token found',
+  baseURLConfig: baseURL
+});
+
+// Add request debugging
+strapiAPI.interceptors.request.use(
+  (config) => {
+    console.log('Request Details:', {
+      fullUrl: `${config.baseURL}${config.url}`,
+      authHeaderPresent: !!config.headers.Authorization,
+      authHeaderPreview: config.headers.Authorization?.substring(0, 20) + '...',
+      method: config.method?.toUpperCase()
+    });
+    return config;
+  },
+  (error) => {
+    console.error('Request Configuration Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response debugging
+strapiAPI.interceptors.response.use(
+  (response) => {
+    console.log('Successful Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      hasData: !!response.data
+    });
+    return response;
+  },
+  (error) => {
+    console.error('API Error Details:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      errorMessage: error.response?.data?.error?.message,
+      errorDetails: error.response?.data?.error?.details,
+      requestConfig: {
+        url: error.config?.url,
+        method: error.config?.method
+      }
+    });
+    return Promise.reject(error);
+  }
+);
 
 // Debug environment variable
 console.log('API Token exists:', !!process.env.STRAPI_API_TOKEN);
