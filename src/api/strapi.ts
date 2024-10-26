@@ -9,9 +9,9 @@ const strapiAPI = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN}`
+    'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN}`  // Changed from import.meta.env
   },
-  timeout: 10000 // 10 second timeout
+  timeout: 10000 
 });
 
 export const fetchWalks = async () => {
