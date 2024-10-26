@@ -1,10 +1,17 @@
 import axios from 'axios';
 
+// Define the base URL based on environment
+const baseURL = import.meta.env.PROD 
+  ? 'https://api.dogwalksnearme.uk/api'  // Production API endpoint
+  : `${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/api`;  // Development API endpoint
+
 const strapiAPI = axios.create({
-  baseURL: `${import.meta.env.VITE_STRAPI_URL}/api`,
+  baseURL,
   headers: {
-    Authorization: `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN}`
-  }
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN}`
+  },
+  timeout: 10000 // 10 second timeout
 });
 
 export const fetchWalks = async () => {
