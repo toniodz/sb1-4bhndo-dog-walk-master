@@ -9,9 +9,19 @@ const strapiAPI = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN}`
+    'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN || import.meta.env.VITE_STRAPI_API_TOKEN}`
   },
   timeout: 10000 
+});
+
+// Debug environment variables
+console.log('Environment Variables Debug:', {
+  hasProcessEnvToken: !!process.env.STRAPI_API_TOKEN,
+  hasViteToken: !!import.meta.env.VITE_STRAPI_API_TOKEN,
+  processEnvTokenPreview: process.env.STRAPI_API_TOKEN ? 
+    `${process.env.STRAPI_API_TOKEN.substring(0, 5)}...` : 'not found',
+  viteTokenPreview: import.meta.env.VITE_STRAPI_API_TOKEN ? 
+    `${import.meta.env.VITE_STRAPI_API_TOKEN.substring(0, 5)}...` : 'not found'
 });
 
 // Detailed token verification
