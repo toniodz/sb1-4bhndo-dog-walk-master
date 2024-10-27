@@ -100,10 +100,10 @@ const HomePage: React.FC = () => {
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
            {walks.map((walk) => (
              <Link 
-               key={walk.id} 
-               to={`/blog/${walk.slug}`} 
-               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-             >
+  key={walk.id} 
+  to={`/dog-walks/${walk.slug}`}  // Changed from /blog to /dog-walks
+  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+>
                {walk.image?.url && (
                  <img 
                    src={`${import.meta.env.VITE_STRAPI_URL}${walk.image.url}`} 
