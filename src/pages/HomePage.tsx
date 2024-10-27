@@ -27,26 +27,39 @@ const HomePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadWalks = async () => {
-      try {
-        setIsLoading(true);
-        const fetchedWalks = await fetchWalks();
-        if (Array.isArray(fetchedWalks)) {
-          setWalks(fetchedWalks);
-        } else {
-          throw new Error('Invalid data structure received from API');
-        }
-      } catch (err) {
-        console.error('Error fetching walks:', err instanceof Error ? err.message : String(err));
-        setError('Failed to fetch walks. Please try again later.');
-      } finally {
-        setIsLoading(false);
+useEffect(() => {
+  const loadWalks = async () => {
+    try {
+      setIsLoading(true);
+      const fetchedWalks = await fetchWalks();
+      console.log('Fetched walks:', fetchedWalks); // Debug log
+      
+      if (Array.isArray(fetchedWalks)) {
+        // Transform the data if needed to match your component structure
+        const processedWalks = fetchedWalks.map(walk => ({
+          id: walk.id,
+          Title: walk.Title,
+          slug: walk.slug,
+          rating: walk.rating,
+          address: walk.address,
+          duration: walk.duration,
+          difficulty: walk.difficulty,
+          image: walk.image
+        }));
+        console.log('Processed walks:', processedWalks); // Debug log
+        setWalks(processedWalks);
+      } else {
+        throw new Error('Invalid data structure received from API');
       }
-    };
-
-    loadWalks();
-  }, []);
+    } catch (err) {
+      console.error('Error fetching walks:', err instanceof Error ? err.message : String(err));
+      setError('Failed to fetch walks. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  loadWalks();
+}, []);
 
   if (isLoading) {
     return (
@@ -92,44 +105,63 @@ const HomePage: React.FC = () => {
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {walks.map((walk) => (
-              walk?.attributes && (
-                <Link 
-                  key={walk.id} 
-                  to={`/blog/${walk.attributes.slug}`} 
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                >
-                  {walk.attributes.image?.data?.attributes?.url && (
-                    <img 
-                      src={`${import.meta.env.VITE_STRAPI_URL}${walk.attributes.image.data.attributes.url}`} 
-                      alt={walk.attributes.title} 
-                      className="w-full h-48 object-cover"
-                    />
-                  )}
-                  <div className="p-4">
-                    <h3 className="text-xl font-semibold mb-2">{walk.attributes.title}</h3>
-                    <div className="flex items-center text-gray-600 mb-2">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{walk.attributes.address}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600 mb-2">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{walk.attributes.duration}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <Star className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{walk.attributes.difficulty}</span>
-                    </div>
-                    <div className="mt-2 text-primary font-semibold">
-                      Rating: {walk.attributes.rating.toFixed(1)}
-                    </div>
-                  </div>
-                </Link>
-              )
-            ))}
-          </div>
-        </div>
-      </section>
+           {/* Walks Section */}
+<section className="py-16 bg-gray-50">
+ <div className="container mx-auto px-4">
+   <h2 className="text-3xl font-bold text-center mb-12">Featured Walks</h2>
+   
+   {error && (
+     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+       {error}
+     </div>
+   )}
+   
+   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+     {walks.map((walk) => (
+       <Link 
+         key={walk.id} 
+         to={`/blog/${walk.slug}`} 
+         className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+       >
+         {walk.image?.url && (
+           <img 
+             src={`${import.meta.env.VITE_STRAPI_URL}${walk.image.url}`} 
+             alt={walk.Title} 
+             className="w-full h-48 object-cover"
+           />
+         )}
+         <div className="p-4">
+           <h3 className="text-xl font-semibold mb-2">{walk.Title}</h3>
+           <div className="flex items-center text-gray-600 mb-2">
+             <MapPin className="h-4 w-4 mr-1" />
+             <span className="text-sm">{walk.address}</span>
+           </div>
+           <div className="flex items-center text-gray-600 mb-2">
+             <Clock className="h-4 w-4 mr-1" />
+             <span className="text-sm">{walk.duration}</span>
+           </div>
+           <div className="flex items-center text-gray-600">
+             <Star className="h-4 w-4 mr-1" />
+             <span className="text-sm">{walk.difficulty}</span>
+           </div>
+           {walk.rating && (
+             <div className="mt-2 text-primary font-semibold">
+               Rating: {walk.rating.toFixed(1)}
+             </div>
+           )}
+         </div>
+       </Link>
+     ))}
+   </div>
+
+   {isLoading && (
+     <div className="flex justify-center items-center">
+       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+     </div>
+   )}
+
+ </div>
+</section>
 
       {/* CTA Section */}
       <section className="bg-primary text-white py-16">
