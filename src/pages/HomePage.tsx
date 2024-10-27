@@ -4,16 +4,16 @@ import { fetchWalks } from '../api/strapi';
 import { MapPin, Clock, Star, Send } from 'lucide-react';
 
 interface Walk {
- id: number;
- Title: string;
- slug: string;
- address: string;
- duration: string;
- difficulty: string;
- rating: number;
- image?: {
-   url: string;
- };
+  id: number;
+  Title: string;
+  slug: string;
+  address: string;
+  duration: string;
+  difficulty: string;
+  rating: number;
+  image: {
+    url: string;
+  } | null;
 }
 
 const HomePage: React.FC = () => {
