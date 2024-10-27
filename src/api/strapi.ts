@@ -9,48 +9,35 @@ const strapiAPI = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN || import.meta.env.VITE_STRAPI_API_TOKEN}`
+    'Authorization': `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN}`
   },
   timeout: 10000 
 });
 
-// Debug environment variables
-console.log('Environment Variables Debug:', {
-  hasProcessEnvToken: !!process.env.STRAPI_API_TOKEN,
+// Single debug log for token
+console.log('Strapi Configuration:', {
   hasViteToken: !!import.meta.env.VITE_STRAPI_API_TOKEN,
-  processEnvTokenPreview: process.env.STRAPI_API_TOKEN ? 
-    `${process.env.STRAPI_API_TOKEN.substring(0, 5)}...` : 'not found',
-  viteTokenPreview: import.meta.env.VITE_STRAPI_API_TOKEN ? 
-    `${import.meta.env.VITE_STRAPI_API_TOKEN.substring(0, 5)}...` : 'not found'
-});
-
-// Detailed token verification
-console.log('Token Verification:', {
-  isTokenPresent: !!process.env.STRAPI_API_TOKEN,
-  tokenPreview: process.env.STRAPI_API_TOKEN ? 
-    `Bearer ${process.env.STRAPI_API_TOKEN.substring(0, 6)}...` : 
+  tokenPreview: import.meta.env.VITE_STRAPI_API_TOKEN ? 
+    `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN.substring(0, 5)}...` : 
     'No token found',
-  baseURLConfig: baseURL
+  baseURL: baseURL
 });
 
-// Add request debugging
+// Single request interceptor
 strapiAPI.interceptors.request.use(
   (config) => {
-    console.log('Request Details:', {
+    console.log('Outgoing Request:', {
       fullUrl: `${config.baseURL}${config.url}`,
+      method: config.method?.toUpperCase(),
       authHeaderPresent: !!config.headers.Authorization,
-      authHeaderPreview: config.headers.Authorization?.substring(0, 20) + '...',
-      method: config.method?.toUpperCase()
+      authHeaderPreview: config.headers.Authorization?.substring(0, 20) + '...'
     });
     return config;
   },
-  (error) => {
-    console.error('Request Configuration Error:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Add response debugging
+// Single response interceptor
 strapiAPI.interceptors.response.use(
   (response) => {
     console.log('Successful Response:', {
@@ -61,57 +48,14 @@ strapiAPI.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('API Error Details:', {
+    console.error('API Error:', {
       status: error.response?.status,
-      statusText: error.response?.statusText,
-      errorMessage: error.response?.data?.error?.message,
-      errorDetails: error.response?.data?.error?.details,
-      requestConfig: {
-        url: error.config?.url,
-        method: error.config?.method
-      }
+      message: error.response?.data?.error?.message,
+      url: error.config?.url,
+      authHeader: error.config?.headers?.Authorization?.substring(0, 20) + '...'
     });
     return Promise.reject(error);
   }
-);
-
-// Debug environment variable
-console.log('API Token exists:', !!process.env.STRAPI_API_TOKEN);
-console.log('Base URL:', baseURL);
-
-// Add request interceptor
-strapiAPI.interceptors.request.use(
- (config) => {
-   console.log('Request Config:', {
-     url: config.url,
-     method: config.method,
-     headers: config.headers,
-     baseURL: config.baseURL
-   });
-   return config;
- },
- (error) => {
-   console.error('Request Error:', error);
-   return Promise.reject(error);
- }
-);
-
-// Add response interceptor
-strapiAPI.interceptors.response.use(
- (response) => {
-   console.log('Response Status:', response.status);
-   console.log('Response Data:', response.data);
-   return response;
- },
- (error) => {
-   console.error('Response Error:', {
-     status: error.response?.status,
-     statusText: error.response?.statusText,
-     data: error.response?.data,
-     url: error.config?.url
-   });
-   return Promise.reject(error);
- }
 );
 
 export const fetchWalks = async () => {
