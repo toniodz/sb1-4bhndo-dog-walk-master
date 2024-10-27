@@ -57,7 +57,7 @@ const BlogPost: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  const canonicalUrl = `${window.location.origin}/blog/${post.attributes.slug}`;
+  const canonicalUrl = `${window.location.origin}/dog-walks/${post.attributes.slug}`;
   const ogImageUrl = `${import.meta.env.VITE_STRAPI_URL}${post.attributes.image.data.attributes.url}`;
 
   return (
