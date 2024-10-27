@@ -1,9 +1,20 @@
-// Define interfaces
-interface StrapiResponse<T> {
- data: Array<{
-   id: number;
-   attributes: T;
- }>;
+// Define interfaces to match actual API response
+interface Walk {
+ id: number;
+ documentId: string;
+ Title: string;
+ slug: string;
+ rating: number | null;
+ address: string;
+ duration: string;
+ difficulty: string;
+ image?: {
+   url: string;
+ } | null;
+}
+
+interface StrapiResponse {
+ data: Walk[];
  meta: {
    pagination: {
      page: number;
@@ -11,22 +22,6 @@ interface StrapiResponse<T> {
      pageCount: number;
      total: number;
    };
- };
-}
-
-interface Walk {
- Title: string;
- slug: string;
- address: string;
- duration: string;
- difficulty: string;
- rating: number;
- image: {
-   data: {
-     attributes: {
-       url: string;
-     };
-   } | null;
  };
 }
 
@@ -93,19 +88,14 @@ strapiAPI.interceptors.response.use(
 export const fetchWalks = async () => {
  try {
    console.log('Fetching walks...');
-   const response = await strapiAPI.get<StrapiResponse<Walk>>('/walks?populate=*');
+   const response = await strapiAPI.get<StrapiResponse>('/walks?populate=*');
    console.log('Raw API response:', response.data);
    
    if (response.data?.data) {
-     // Transform the data to match the component's expectations
-     const processedWalks = response.data.data.map(item => ({
-       id: item.id,
-       ...item.attributes,  // This spreads Title, slug, etc.
-       image: item.attributes.image?.data?.attributes ?? null
-     }));
-     
-     console.log('Processed walks:', processedWalks);
-     return processedWalks;
+     // Return the data directly since it already matches our interface
+     const walks = response.data.data;
+     console.log('Processed walks:', walks);
+     return walks;
    }
    return [];
  } catch (error) {
@@ -116,9 +106,11 @@ export const fetchWalks = async () => {
 
 export const fetchWalkBySlug = async (slug: string) => {
  try {
-   const response = await strapiAPI.get(`/walks?filters[slug][$eq]=${slug}&populate=*`);
+   const response = await strapiAPI.get<StrapiResponse>(`/walks?filters[slug][$eq]=${slug}&populate=*`);
    console.log('Strapi API Response for single walk:', response.data);
-   if (response.data && response.data.data && response.data.data.length > 0) {
+   
+   if (response.data?.data && response.data.data.length > 0) {
+     // Return the first matching walk directly
      return response.data.data[0];
    } else {
      console.error('Walk not found');
