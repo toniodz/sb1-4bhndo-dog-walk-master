@@ -113,35 +113,36 @@ export const fetchWalks = async () => {
 export const fetchWalkBySlug = async (slug: string) => {
   try {
     const response = await strapiAPI.get<StrapiResponse>(`/walks?filters[slug][$eq]=${slug}&populate=*`);
-    console.log('Strapi API Response for single walk:', response.data);
+    console.log('Full API Response:', response.data);
     
     if (response.data?.data && response.data.data.length > 0) {
       const walk = response.data.data[0];
-      console.log('Walk coordinates from API:', walk.coordinates); // Debug log
+      console.log('Raw walk data:', walk); // Debug log
+      console.log('Walk attributes:', walk.attributes); // Debug log
 
       return {
         id: walk.id,
         attributes: {
-          title: walk.Title,
-          overview: walk.overview || '',
+          title: walk.attributes.Title,
+          overview: walk.attributes.overview || '',
           image: {
             data: {
               attributes: {
-                url: walk.image?.url || ''
+                url: walk.attributes.image?.data?.attributes?.url || ''
               }
             }
           },
-          address: walk.address,
-          duration: walk.duration,
-          difficulty: walk.difficulty,
-          coordinates: walk.coordinates || { lat: 51.1279, lng: 1.3134 }, // Default to Dover if no coordinates
+          address: walk.attributes.address,
+          duration: walk.attributes.duration,
+          difficulty: walk.attributes.difficulty,
+          coordinates: walk.attributes.coordinates || { lat: 51.1279, lng: 1.3134 }, // Access coordinates from attributes
           seo: {
-            metaTitle: walk.Title || '',
-            metaDescription: walk.overview || ''
+            metaTitle: walk.attributes.Title || '',
+            metaDescription: walk.attributes.overview || ''
           },
-          slug: walk.slug,
-          rating: walk.rating || 0,
-          website: walk.website
+          slug: walk.attributes.slug,
+          rating: walk.attributes.rating || 0,
+          website: walk.attributes.website
         }
       };
     } else {
