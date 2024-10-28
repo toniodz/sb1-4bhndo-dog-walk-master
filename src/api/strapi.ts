@@ -117,6 +117,8 @@ export const fetchWalkBySlug = async (slug: string) => {
     
     if (response.data?.data && response.data.data.length > 0) {
       const walk = response.data.data[0];
+      console.log('Walk coordinates from API:', walk.coordinates); // Debug log
+
       return {
         id: walk.id,
         attributes: {
@@ -132,7 +134,7 @@ export const fetchWalkBySlug = async (slug: string) => {
           address: walk.address,
           duration: walk.duration,
           difficulty: walk.difficulty,
-          coordinates: walk.coordinates || { lat: 0, lng: 0 },
+          coordinates: walk.coordinates || { lat: 51.1279, lng: 1.3134 }, // Default to Dover if no coordinates
           seo: {
             metaTitle: walk.Title || '',
             metaDescription: walk.overview || ''
