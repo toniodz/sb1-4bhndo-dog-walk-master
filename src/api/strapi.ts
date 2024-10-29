@@ -110,54 +110,23 @@ export const fetchWalks = async () => {
   }
 };
 
+// in strapi.ts
 export const fetchWalkBySlug = async (slug: string) => {
   try {
-    const response = await strapiAPI.get<StrapiResponse>(`/walks?filters[slug][$eq]=${slug}&populate=*`);
-    console.log('Initial API Response:', response); // Log full response
+    console.log('Fetching walk with slug:', slug);
     
-    if (response.data?.data && response.data.data.length > 0) {
-      const walkData = response.data.data[0];
-      console.log('Walk Data:', walkData); // Log the walk data
-      
-      // Make sure we're accessing the correct structure
-      if (!walkData.attributes) {
-        throw new Error('Walk data structure is invalid');
-      }
+    const response = await strapiAPI.get(`/walks?filters[slug][$eq]=${slug}&populate=*`);
+    console.log('Raw API response:', response.data);
 
-      return {
-        id: walkData.id,
-        attributes: {
-          title: walkData.attributes.Title || '',
-          overview: walkData.attributes.overview || '',
-          image: {
-            data: {
-              attributes: {
-                url: walkData.attributes.image?.data?.attributes?.url || ''
-              }
-            }
-          },
-          address: walkData.attributes.address || '',
-          duration: walkData.attributes.duration || '',
-          difficulty: walkData.attributes.difficulty || '',
-          coordinates: walkData.attributes.coordinates || { lat: 51.1279, lng: 1.3134 },
-          seo: {
-            metaTitle: walkData.attributes.Title || '',
-            metaDescription: walkData.attributes.overview || ''
-          },
-          slug: walkData.attributes.slug || '',
-          rating: walkData.attributes.rating || 0,
-          website: walkData.attributes.website || '',
-          createdAt: walkData.attributes.createdAt || '',
-          updatedAt: walkData.attributes.updatedAt || ''
-        }
-      };
-    } else {
-      console.error('Walk not found');
-      return null;
+    if (!response.data?.data?.[0]) {
+      throw new Error('Walk not found');
     }
+
+    // Return the raw data first to see what we're getting
+    return response.data.data[0];
+    
   } catch (error) {
-    console.error('Full error:', error);
-    console.error('Error fetching walk by slug from Strapi:', error instanceof Error ? error.message : String(error));
+    console.error('Error in fetchWalkBySlug:', error);
     throw error;
   }
 };
