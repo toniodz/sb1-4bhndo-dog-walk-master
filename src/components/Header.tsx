@@ -21,6 +21,12 @@ const Header: React.FC = () => {
             <ul className="flex space-x-4">
               <li><Link to="/" className="text-gray-600 hover:text-primary">Home</Link></li>
               <li><Link to="/search" className="text-gray-600 hover:text-primary">Search</Link></li>
+              <li><Link 
+  to="/submit-walk" 
+  className="text-gray-600 hover:text-primary"
+>
+  Submit a Walk
+</Link></li>
             </ul>
           </nav>
           <div className="flex items-center space-x-4">
