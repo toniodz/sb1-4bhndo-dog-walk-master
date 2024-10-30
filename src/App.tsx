@@ -22,6 +22,7 @@ function App() {
   <Route path="/dog-walks/:slug" element={<BlogPost />} />  {/* Changed from /blog to /dog-walks */}
   <Route path="/search" element={<SearchPage />} />
   <Route path="/submit-walk" element={<SubmitWalk />} />
+  <Route path="/thank-you" element={<ThankYou />} />
 </Routes>
             </ErrorBoundary>
           </main>
