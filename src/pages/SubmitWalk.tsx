@@ -33,11 +33,110 @@ const SubmitWalk: React.FC = () => {
         data-netlify-honeypot="bot-field"
         className="space-y-6"
       >
-        {/* Rest of your form code stays the same */}
-        {/* ... */}
-      </form>
-    </div>
-  );
-};
+        {/* Hidden fields for Netlify */}
+        <input type="hidden" name="form-name" value="walk-submission" />
+        <input type="hidden" name="bot-field" />
+        <input type="hidden" name="notify" value="tony@dzines.co.uk" />
 
-export default SubmitWalk;
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
+            <input
+              type="text"
+              name="name"
+              required
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Your Email</label>
+            <input
+              type="email"
+              name="email"
+              required
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Walk Title</label>
+          <input
+            type="text"
+            name="walk-title"
+            required
+            placeholder="e.g., White Cliffs Coastal Path"
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+          <input
+            type="text"
+            name="location"
+            required
+            placeholder="e.g., Dover, Kent"
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+            <input
+              type="text"
+              name="duration"
+              required
+              placeholder="e.g., 1-2 hours"
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+            <select
+              name="difficulty"
+              required
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              <option value="">Select difficulty</option>
+              <option value="Easy">Easy</option>
+              <option value="Moderate">Moderate</option>
+              <option value="Challenging">Challenging</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Parking Information</label>
+          <input
+            type="text"
+            name="parking"
+            required
+            placeholder="e.g., Free parking available at..."
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea
+            name="description"
+            required
+            rows={6}
+            placeholder="Please provide details about the walk, including terrain type, dog-friendly features, points of interest, etc."
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Website (if available)</label>
+          <input
+            type="url"
+            name="website"
+            placeholder="e.g., https://www.nationaltrust.org.uk/..."
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
