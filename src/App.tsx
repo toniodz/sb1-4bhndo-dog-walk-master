@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import BlogPost from './pages/BlogPost';
 import SearchPage from './pages/SearchPage';
 import ErrorBoundary from './components/ErrorBoundary';
+import SubmitWalk from './pages/SubmitWalk';
 
 function App() {
   return (
