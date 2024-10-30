@@ -8,6 +8,7 @@ import BlogPost from './pages/BlogPost';
 import SearchPage from './pages/SearchPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import SubmitWalk from './pages/SubmitWalk';
+import ThankYou from './pages/ThankYou'; 
 
 function App() {
   return (
