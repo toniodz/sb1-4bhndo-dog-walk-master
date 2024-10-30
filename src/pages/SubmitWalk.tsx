@@ -8,13 +8,13 @@ const SubmitWalk: React.FC = () => {
      <p className="mb-6 text-gray-600">Share your favorite dog walking route with our community.</p>
 
      <form 
-       name="walk-submission"
-       method="POST"
-       data-netlify="true"
-       action="/thank-you"
-       netlify-honeypot="bot-field"
-       className="space-y-6"
-     >
+  name="walk-submission"
+  method="POST"
+  data-netlify="true"
+  data-netlify-honeypot="bot-field"
+  className="space-y-6"
+  action="/thank-you"  // This should work now with the route added
+>
        {/* Hidden fields for Netlify */}
        <input type="hidden" name="form-name" value="walk-submission" />
        <input type="hidden" name="bot-field" />
