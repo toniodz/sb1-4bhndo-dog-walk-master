@@ -6,15 +6,14 @@ const SubmitWalk: React.FC = () => {
    <div className="max-w-2xl mx-auto p-6">
      <h1 className="text-3xl font-bold mb-6">Submit a Dog Walk</h1>
      <p className="mb-6 text-gray-600">Share your favorite dog walking route with our community.</p>
-
-    <form 
+    
+<form 
   name="walk-submission"
   method="POST"
   data-netlify="true"
   data-netlify-honeypot="bot-field"
   className="space-y-6"
-  action="/"
-  data-netlify-success-url="https://dogwalksnearme.uk/thank-you"
+  action="https://dogwalksnearme.uk/thank-you"
 >
        {/* Hidden fields for Netlify */}
        <input type="hidden" name="form-name" value="walk-submission" />
