@@ -1,0 +1,8 @@
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[forms]
+  [forms.walk-submission]
+    success_url = "/thank-you"
