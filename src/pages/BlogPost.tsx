@@ -114,11 +114,11 @@ const BlogPost: React.FC = () => {
         </div>
       </div>
 
-      {post.coordinates && (
-        <div className="mb-8 h-96">
-          <Map center={post.coordinates} />
-        </div>
-      )}
+{post.address && (
+  <div className="mb-8 h-96">
+    <Map address={post.address} />
+  </div>
+)}
 
       <div 
         className="prose prose-lg mb-8"
