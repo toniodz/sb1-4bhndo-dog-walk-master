@@ -2,25 +2,6 @@
 import React from 'react';
 
 const SubmitWalk: React.FC = () => {
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    
-    try {
-      const formData = new FormData(form);
-      await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData as any).toString(),
-      });
-      
-      // Redirect on success
-      window.location.href = '/thank-you';
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Submit a Dog Walk</h1>
@@ -28,9 +9,10 @@ const SubmitWalk: React.FC = () => {
 
       <form 
         name="walk-submission"
-        onSubmit={handleSubmit}
+        method="POST"
         data-netlify="true"
         data-netlify-honeypot="bot-field"
+        action="/thank-you"
         className="space-y-6"
       >
         {/* Hidden fields for Netlify */}
@@ -140,3 +122,30 @@ const SubmitWalk: React.FC = () => {
             className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+          <textarea
+            name="notes"
+            rows={3}
+            placeholder="Any additional information you'd like to share..."
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-primary text-white py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
+        >
+          Submit Walk
+        </button>
+
+        <p className="text-sm text-gray-500 text-center">
+          Thank you for contributing to our community! We'll review your submission and get back to you soon.
+        </p>
+      </form>
+    </div>
+  );
+};
+
+export default SubmitWalk;
