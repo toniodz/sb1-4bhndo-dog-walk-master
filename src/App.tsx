@@ -9,6 +9,7 @@ import SearchPage from './pages/SearchPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import SubmitWalk from './pages/SubmitWalk';
 import ThankYou from './pages/ThankYou'; 
+import CategoryPage from './pages/CategoryPage';
 
 function App() {
   return (
@@ -24,6 +25,10 @@ function App() {
   <Route path="/search" element={<SearchPage />} />
   <Route path="/submit-walk" element={<SubmitWalk />} />
   <Route path="/thank-you" element={<ThankYou />} />
+  <Route path="/dog-walks" element={<CategoryPage type="all" />} />
+  <Route path="/dog-walks/:region" element={<CategoryPage type="region" />} />
+  <Route path="/dog-walks/:region/:town" element={<CategoryPage type="town" />} />
+  <Route path="/dog-walks/walk/:slug" element={<BlogPost />} />
 </Routes>
             </ErrorBoundary>
           </main>
