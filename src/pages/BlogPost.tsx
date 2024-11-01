@@ -121,12 +121,12 @@ const BlogPost: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
   if (!post) return <div>No post found</div>;
 
-  const breadcrumbItems = [
-    { label: 'Dog Walks', path: '/dog-walks' },
-    { label: 'Kent', path: '/dog-walks/kent' },
-    { label: 'Dover', path: '/dog-walks/kent/dover' },
-    { label: post.Title, path: `/dog-walks/${post.slug}` }
-  ];
+const breadcrumbItems = [
+  { label: 'Dog Walks', path: '/dog-walks' },
+  { label: 'Kent', path: '/dog-walks/region/kent' },
+  { label: post.Town, path: `/dog-walks/region/kent/${post.Town?.toLowerCase()}` },
+  { label: post.Title, path: `/dog-walks/${post.slug}` }
+];
 
   const imageUrl = post.image?.[0]?.formats?.large?.url || post.image?.[0]?.url;
   const allImages = [...(post.image || []), ...(post.gallery || [])];
