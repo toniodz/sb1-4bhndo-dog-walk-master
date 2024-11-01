@@ -93,33 +93,30 @@ strapiAPI.interceptors.response.use(
 
 // src/api/strapi.ts
 
-interface FetchWalksFilters {
+export const fetchWalks = async (filters?: {
   region?: string;
   town?: string;
-}
-
-export const fetchWalks = async (filters?: FetchWalksFilters) => {
+}) => {
   try {
     console.log('Fetching walks with filters:', filters);
     
-    // Build the query string with filters
     let queryString = '/walks?populate=*';
     
     if (filters?.town) {
+      // Exact match for town
       queryString += `&filters[Town][$eq]=${filters.town}`;
-    }
-    if (filters?.region) {
-      queryString += `&filters[Town][$contains]=${filters.region}`;
+    } else if (filters?.region) {
+      // Case-insensitive contains for region
+      queryString += `&filters[Town][$containsi]=${filters.region}`;
     }
 
     console.log('Query string:', queryString);
     
     const response = await strapiAPI.get<StrapiResponse>(queryString);
-    console.log('Raw API response:', response.data);
     
     if (response.data?.data) {
       const walks = response.data.data;
-      console.log('Processed walks:', walks);
+      console.log(`Found ${walks.length} walks`);
       return walks;
     }
     return [];
