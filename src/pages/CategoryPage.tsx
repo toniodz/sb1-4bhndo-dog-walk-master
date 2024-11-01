@@ -4,11 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchWalks } from '../api/strapi';
 import { MapPin, Clock, Star } from 'lucide-react';
 
-interface CategoryPageProps {
-  type?: 'all' | 'region' | 'town';
-}
-
-const CategoryPage: React.FC<CategoryPageProps> = ({ type = 'all' }) => {
+const CategoryPage: React.FC = () => {
   const { region, town } = useParams<{ region?: string; town?: string }>();
   const [walks, setWalks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,17 +13,19 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ type = 'all' }) => {
     const loadWalks = async () => {
       try {
         setLoading(true);
-        let filters = {};
+        console.log('Loading walks for:', { region, town }); // Debug log
 
-        if (region && town) {
-          filters = { town: town };
-        }
-        else if (region && !town) {
-          filters = { region: region };
+        const filters: { region?: string; town?: string } = {};
+        
+        if (town) {
+          filters.town = town;
+        } else if (region) {
+          filters.region = region;
         }
 
-        console.log('Applying filters:', filters);
+        console.log('Applying filters:', filters); // Debug log
         const fetchedWalks = await fetchWalks(filters);
+        console.log('Fetched walks:', fetchedWalks); // Debug log
         setWalks(fetchedWalks);
       } catch (error) {
         console.error('Error loading walks:', error);
@@ -45,7 +43,13 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ type = 'all' }) => {
     return 'All Dog Walks';
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -55,7 +59,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ type = 'all' }) => {
         {walks.map((walk) => (
           <Link 
             key={walk.id}
-            to={`/dog-walks/${walk.slug}`}
+            to={`/dog-walks/walk/${walk.slug}`} // Updated link path
             className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
           >
             {walk.image?.[0]?.formats?.medium?.url && (
