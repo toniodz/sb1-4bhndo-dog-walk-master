@@ -91,14 +91,33 @@ strapiAPI.interceptors.response.use(
   }
 );
 
-export const fetchWalks = async () => {
+// src/api/strapi.ts
+
+interface FetchWalksFilters {
+  region?: string;
+  town?: string;
+}
+
+export const fetchWalks = async (filters?: FetchWalksFilters) => {
   try {
-    console.log('Fetching walks...');
-    const response = await strapiAPI.get<StrapiResponse>('/walks?populate=*');
+    console.log('Fetching walks with filters:', filters);
+    
+    // Build the query string with filters
+    let queryString = '/walks?populate=*';
+    
+    if (filters?.town) {
+      queryString += `&filters[Town][$eq]=${filters.town}`;
+    }
+    if (filters?.region) {
+      queryString += `&filters[Town][$contains]=${filters.region}`;
+    }
+
+    console.log('Query string:', queryString);
+    
+    const response = await strapiAPI.get<StrapiResponse>(queryString);
     console.log('Raw API response:', response.data);
     
     if (response.data?.data) {
-      // Return the data directly since it already matches our interface
       const walks = response.data.data;
       console.log('Processed walks:', walks);
       return walks;
