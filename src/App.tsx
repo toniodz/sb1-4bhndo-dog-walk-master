@@ -20,12 +20,15 @@ function App() {
             <ErrorBoundary>
 <Routes>
   <Route path="/" element={<HomePage />} />
+  {/* Put specific routes first to prevent slug conflicts */}
   <Route path="/search" element={<SearchPage />} />
-  <Route path="/walks/:slug" element={<BlogPost />} /> {/* Individual walk posts */}
-  <Route path="/dog-walks" element={<CategoryPage />} /> {/* All walks */}
-  <Route path="/dog-walks/:region" element={<CategoryPage />} /> {/* Region page */}
-  <Route path="/dog-walks/:region/:town" element={<CategoryPage />} /> {/* Town page */}
+  <Route path="/dog-walks" element={<CategoryPage />} />
+  <Route path="/dog-walks/:region" element={<CategoryPage />} />
+  <Route path="/dog-walks/:region/:town" element={<CategoryPage />} />
+  {/* Put the slug route last so it doesn't catch other routes */}
+  <Route path="/:slug" element={<BlogPost />} />
 </Routes>
+
             </ErrorBoundary>
           </main>
           <Footer />
