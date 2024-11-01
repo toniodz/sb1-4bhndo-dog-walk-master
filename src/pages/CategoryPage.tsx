@@ -4,11 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchWalks } from '../api/strapi';
 import { MapPin, Clock, Star } from 'lucide-react';
 
-interface CategoryPageProps {
-  type: 'region' | 'town'; // Add more types if needed
-}
-
-const CategoryPage: React.FC<CategoryPageProps> = ({ type }) => {
+const CategoryPage: React.FC = () => {
   const { region, town } = useParams<{ region?: string; town?: string }>();
   const [walks, setWalks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,20 +13,20 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ type }) => {
     const loadWalks = async () => {
       try {
         setLoading(true);
-        const allWalks = await fetchWalks();
-        
-        // Filter walks based on category type
-        const filteredWalks = allWalks.filter(walk => {
-          if (type === 'region' && region) {
-            return walk.Town?.toLowerCase().includes(region.toLowerCase());
-          }
-          if (type === 'town' && town) {
-            return walk.Town?.toLowerCase() === town.toLowerCase();
-          }
-          return true; // Show all walks on the main walks page
-        });
+        let filters = {};
 
-        setWalks(filteredWalks);
+        // If we have both region and town
+        if (region && town) {
+          filters = { town: town };
+        }
+        // If we only have region
+        else if (region && !town) {
+          filters = { region: region };
+        }
+
+        console.log('Applying filters:', filters);
+        const fetchedWalks = await fetchWalks(filters);
+        setWalks(fetchedWalks);
       } catch (error) {
         console.error('Error loading walks:', error);
       } finally {
@@ -39,51 +35,19 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ type }) => {
     };
 
     loadWalks();
-  }, [type, region, town]);
+  }, [region, town]);
 
-  const getTitle = () => {
-    if (type === 'town' && town) return `Dog Walks in ${town}`;
-    if (type === 'region' && region) return `Dog Walks in ${region}`;
+  const getPageTitle = () => {
+    if (town) return `Dog Walks in ${town}`;
+    if (region) return `Dog Walks in ${region}`;
     return 'All Dog Walks';
-  };
-
-  const getBreadcrumbs = () => {
-    const crumbs = [
-      { label: 'Dog Walks', path: '/dog-walks' }
-    ];
-    
-    if (region) {
-      crumbs.push({ label: region, path: `/dog-walks/${region.toLowerCase()}` });
-    }
-    
-    if (town) {
-      crumbs.push({ label: town, path: `/dog-walks/${region?.toLowerCase()}/${town.toLowerCase()}` });
-    }
-
-    return crumbs;
   };
 
   if (loading) return <div>Loading...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumbs */}
-      <nav className="mb-8">
-        <ol className="flex items-center space-x-2">
-          {getBreadcrumbs().map((crumb, index) => (
-            <React.Fragment key={crumb.path}>
-              {index > 0 && <span className="text-gray-400">/</span>}
-              <li>
-                <Link to={crumb.path} className="text-primary hover:underline">
-                  {crumb.label}
-                </Link>
-              </li>
-            </React.Fragment>
-          ))}
-        </ol>
-      </nav>
-
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">{getTitle()}</h1>
+      <h1 className="text-4xl font-bold text-gray-800 mb-8">{getPageTitle()}</h1>
 
       {/* Walks Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -126,8 +90,22 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ type }) => {
           <p className="text-gray-600">No walks found in this area.</p>
         </div>
       )}
+
+      {/* Debug section */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mt-8 p-4 bg-gray-100 rounded">
+          <h3 className="font-bold mb-2">Debug Info:</h3>
+          <pre className="text-sm">
+            Region: {region || 'none'}<br />
+            Town: {town || 'none'}<br />
+            Walks found: {walks.length}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };
+
+export default CategoryPage;
 
 export default CategoryPage;
