@@ -123,9 +123,8 @@ const BlogPost: React.FC = () => {
 
 const breadcrumbItems = [
   { label: 'Dog Walks', path: '/dog-walks' },
-  { label: 'Kent', path: '/dog-walks/region/kent' },
-  { label: post.Town, path: `/dog-walks/region/kent/${post.Town?.toLowerCase()}` },
-  { label: post.Title, path: `/dog-walks/${post.slug}` }
+  { label: post.Town, path: `/dog-walks/${post.Town?.toLowerCase()}` },
+  { label: post.Title, path: `/walks/${post.slug}` }
 ];
 
   const imageUrl = post.image?.[0]?.formats?.large?.url || post.image?.[0]?.url;
