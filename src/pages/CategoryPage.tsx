@@ -57,11 +57,12 @@ const CategoryPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {walks.map((walk) => (
-          <Link 
-            key={walk.id}
-            to={`/dog-walks/walk/${walk.slug}`} // Updated link path
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-          >
+          // In CategoryPage.tsx, update the Link component
+<Link 
+  key={walk.id}
+  to={`/dog-walks/${walk.slug}`} // Changed from '/dog-walks/walk/${walk.slug}'
+  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+>
             {walk.image?.[0]?.formats?.medium?.url && (
               <img 
                 src={walk.image[0].formats.medium.url}
