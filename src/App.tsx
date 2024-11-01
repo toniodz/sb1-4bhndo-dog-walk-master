@@ -20,11 +20,11 @@ function App() {
             <ErrorBoundary>
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/dog-walks" element={<CategoryPage />} />
-                <Route path="/dog-walks/:region" element={<CategoryPage />} />
-                <Route path="/dog-walks/:region/:town" element={<CategoryPage />} />
-                <Route path="/dog-walks/walk/:slug" element={<BlogPost />} />
                 <Route path="/search" element={<SearchPage />} />
+                <Route path="/dog-walks/:slug" element={<BlogPost />} />
+                <Route path="/dog-walks" element={<CategoryPage />} />
+                <Route path="/dog-walks/region/:region" element={<CategoryPage />} />
+                <Route path="/dog-walks/region/:region/:town" element={<CategoryPage />} />
               </Routes>
             </ErrorBoundary>
           </main>
