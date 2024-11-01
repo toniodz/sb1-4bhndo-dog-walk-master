@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { MapPin, Clock, Star, Building, Mountain, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Dialog, Transition } from '@headlessui/react';
 import { fetchWalkBySlug } from '../api/strapi';
 import Map from '../components/Map';
 import SEOMetaTags from '../components/SEOMetaTags';
@@ -43,6 +42,55 @@ interface WalkData {
   };
 }
 
+const ImageModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  images: any[];
+  currentIndex: number;
+  onNext: () => void;
+  onPrevious: () => void;
+}> = ({ isOpen, onClose, images, currentIndex, onNext, onPrevious }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white hover:text-gray-300"
+        aria-label="Close gallery"
+      >
+        <X size={24} />
+      </button>
+
+      <button
+        onClick={onPrevious}
+        className="absolute left-4 text-white hover:text-gray-300"
+        aria-label="Previous image"
+      >
+        <ChevronLeft size={36} />
+      </button>
+
+      <img
+        src={images[currentIndex]?.formats?.large?.url}
+        alt={`Gallery image ${currentIndex + 1}`}
+        className="max-h-[85vh] max-w-[90vw] object-contain"
+      />
+
+      <button
+        onClick={onNext}
+        className="absolute right-4 text-white hover:text-gray-300"
+        aria-label="Next image"
+      >
+        <ChevronRight size={36} />
+      </button>
+
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white">
+        {currentIndex + 1} / {images.length}
+      </div>
+    </div>
+  );
+};
+
 const BlogPost: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<WalkData | null>(null);
@@ -69,33 +117,6 @@ const BlogPost: React.FC = () => {
     }
   }, [slug]);
 
-  const handleNextImage = () => {
-    if (!post?.gallery) return;
-    setCurrentImageIndex((prev) => 
-      prev === post.gallery!.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const handlePreviousImage = () => {
-    if (!post?.gallery) return;
-    setCurrentImageIndex((prev) => 
-      prev === 0 ? post.gallery!.length - 1 : prev - 1
-    );
-  };
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowRight') handleNextImage();
-    if (e.key === 'ArrowLeft') handlePreviousImage();
-    if (e.key === 'Escape') setIsGalleryOpen(false);
-  };
-
-  useEffect(() => {
-    if (isGalleryOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isGalleryOpen, post?.gallery]);
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!post) return <div>No post found</div>;
@@ -108,10 +129,15 @@ const BlogPost: React.FC = () => {
   ];
 
   const imageUrl = post.image?.[0]?.formats?.large?.url || post.image?.[0]?.url;
-  const allImages = [
-    ...(post.image || []),
-    ...(post.gallery || [])
-  ];
+  const allImages = [...(post.image || []), ...(post.gallery || [])];
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+  };
+
+  const handlePreviousImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
 
   return (
     <article className="max-w-3xl mx-auto">
@@ -126,7 +152,13 @@ const BlogPost: React.FC = () => {
 
       {/* Main Image */}
       {imageUrl && (
-        <div className="relative cursor-pointer" onClick={() => setIsGalleryOpen(true)}>
+        <div 
+          className="relative cursor-pointer" 
+          onClick={() => {
+            setCurrentImageIndex(0);
+            setIsGalleryOpen(true);
+          }}
+        >
           <img 
             src={imageUrl}
             alt={post.Title} 
@@ -209,20 +241,18 @@ const BlogPost: React.FC = () => {
         </div>
       )}
 
-      {/* Map */}
       {post.address && (
         <div className="mb-8 h-96">
           <Map address={post.address} />
         </div>
       )}
 
-      {/* Overview */}
       <div 
         className="prose prose-lg mb-8"
         dangerouslySetInnerHTML={{ __html: post.overview }}
       ></div>
 
-      {/* Thumbnail Gallery */}
+      {/* Gallery Thumbnails */}
       {allImages.length > 1 && (
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery</h2>
@@ -248,7 +278,6 @@ const BlogPost: React.FC = () => {
         </div>
       )}
 
-      {/* Website Link */}
       {post.website && (
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Website</h2>
@@ -263,66 +292,15 @@ const BlogPost: React.FC = () => {
         </div>
       )}
 
-      {/* Image Gallery Modal */}
-      <Transition show={isGalleryOpen} as={React.Fragment}>
-        <Dialog
-          as="div"
-          className="fixed inset-0 z-50 overflow-y-auto"
-          onClose={() => setIsGalleryOpen(false)}
-        >
-          <div className="min-h-screen text-center">
-            <Transition.Child
-              as={React.Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <Dialog.Overlay className="fixed inset-0 bg-black opacity-90" />
-            </Transition.Child>
-
-            <div className="fixed inset-0 flex items-center justify-center">
-              <div className="relative w-full max-w-6xl px-4">
-                {/* Close button */}
-                <button
-                  onClick={() => setIsGalleryOpen(false)}
-                  className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-                >
-                  <X size={24} />
-                </button>
-
-                {/* Navigation arrows */}
-                <button
-                  onClick={handlePreviousImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300"
-                >
-                  <ChevronLeft size={36} />
-                </button>
-                <button
-                  onClick={handleNextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300"
-                >
-                  <ChevronRight size={36} />
-                </button>
-
-                {/* Main image */}
-                <img
-                  src={allImages[currentImageIndex].formats.large.url}
-                  alt={`${post.Title} - Image ${currentImageIndex + 1}`}
-                  className="max-h-[85vh] mx-auto object-contain"
-                />
-
-                {/* Image counter */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white">
-                  {currentImageIndex + 1} / {allImages.length}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
+      {/* Image Modal */}
+      <ImageModal
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        images={allImages}
+        currentIndex={currentImageIndex}
+        onNext={handleNextImage}
+        onPrevious={handlePreviousImage}
+      />
     </article>
   );
 };
