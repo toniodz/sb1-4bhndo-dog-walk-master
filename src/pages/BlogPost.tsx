@@ -124,9 +124,9 @@ const BlogPost: React.FC = () => {
 const breadcrumbItems = [
   { label: 'Dog Walks', path: '/dog-walks' },
   { label: post.Town, path: `/dog-walks/${post.Town?.toLowerCase()}` },
-  { label: post.Title, path: `/walks/${post.slug}` }
+  { label: post.Title, path: `/${post.slug}` }
 ];
-
+  
   const imageUrl = post.image?.[0]?.formats?.large?.url || post.image?.[0]?.url;
   const allImages = [...(post.image || []), ...(post.gallery || [])];
 
