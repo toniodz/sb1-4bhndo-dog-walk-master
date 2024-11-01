@@ -18,14 +18,15 @@ function App() {
           <Header />
           <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <ErrorBoundary>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/search" element={<SearchPage />} />
-                <Route path="/dog-walks/:slug" element={<BlogPost />} />
-                <Route path="/dog-walks" element={<CategoryPage />} />
-                <Route path="/dog-walks/region/:region" element={<CategoryPage />} />
-                <Route path="/dog-walks/region/:region/:town" element={<CategoryPage />} />
-              </Routes>
+// App.tsx
+<Routes>
+  <Route path="/" element={<HomePage />} />
+  <Route path="/search" element={<SearchPage />} />
+  <Route path="/walks/:slug" element={<BlogPost />} /> {/* Individual walk posts */}
+  <Route path="/dog-walks" element={<CategoryPage />} /> {/* All walks */}
+  <Route path="/dog-walks/:region" element={<CategoryPage />} /> {/* Region page */}
+  <Route path="/dog-walks/:region/:town" element={<CategoryPage />} /> {/* Town page */}
+</Routes>
             </ErrorBoundary>
           </main>
           <Footer />
