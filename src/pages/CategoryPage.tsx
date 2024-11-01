@@ -4,7 +4,11 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchWalks } from '../api/strapi';
 import { MapPin, Clock, Star } from 'lucide-react';
 
-const CategoryPage: React.FC = () => {
+interface CategoryPageProps {
+  type?: 'all' | 'region' | 'town';
+}
+
+const CategoryPage: React.FC<CategoryPageProps> = ({ type = 'all' }) => {
   const { region, town } = useParams<{ region?: string; town?: string }>();
   const [walks, setWalks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,11 +19,9 @@ const CategoryPage: React.FC = () => {
         setLoading(true);
         let filters = {};
 
-        // If we have both region and town
         if (region && town) {
           filters = { town: town };
         }
-        // If we only have region
         else if (region && !town) {
           filters = { region: region };
         }
@@ -49,7 +51,6 @@ const CategoryPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-4xl font-bold text-gray-800 mb-8">{getPageTitle()}</h1>
 
-      {/* Walks Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {walks.map((walk) => (
           <Link 
@@ -91,7 +92,6 @@ const CategoryPage: React.FC = () => {
         </div>
       )}
 
-      {/* Debug section */}
       {process.env.NODE_ENV === 'development' && (
         <div className="mt-8 p-4 bg-gray-100 rounded">
           <h3 className="font-bold mb-2">Debug Info:</h3>
@@ -105,7 +105,5 @@ const CategoryPage: React.FC = () => {
     </div>
   );
 };
-
-export default CategoryPage;
 
 export default CategoryPage;
