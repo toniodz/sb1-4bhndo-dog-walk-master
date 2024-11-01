@@ -104,7 +104,7 @@ export const fetchWalks = async (filters?: {
     
     if (filters?.town) {
       // Exact match for town
-      queryString += `&filters[Town][$eq]=${filters.town}`;
+      queryString += `&filters[Town][$eqi]=${filters.town}`; // Case insensitive exact match
     } else if (filters?.region) {
       // Case-insensitive contains for region
       queryString += `&filters[Town][$containsi]=${filters.region}`;
@@ -116,7 +116,7 @@ export const fetchWalks = async (filters?: {
     
     if (response.data?.data) {
       const walks = response.data.data;
-      console.log(`Found ${walks.length} walks`);
+      console.log(`Found ${walks.length} walks with filters:`, filters);
       return walks;
     }
     return [];
