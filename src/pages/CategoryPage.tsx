@@ -9,30 +9,31 @@ const CategoryPage: React.FC = () => {
   const [walks, setWalks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadWalks = async () => {
-      try {
-        setLoading(true);
-        console.log('Loading walks for:', { region, town });
+useEffect(() => {
+  const loadWalks = async () => {
+    try {
+      setLoading(true);
+      let filters = {};
 
-        const filters = {};
-        if (town) {
-          filters.town = town;
-        } else if (region) {
-          filters.region = region;
-        }
-
-        const fetchedWalks = await fetchWalks(filters);
-        setWalks(fetchedWalks);
-      } catch (error) {
-        console.error('Error loading walks:', error);
-      } finally {
-        setLoading(false);
+      if (town) {
+        filters = { town: town.toLowerCase() };
+      } else if (region) {
+        // If we're on a region page (like dover), we should filter by Town
+        filters = { town: region.toLowerCase() };
       }
-    };
 
-    loadWalks();
-  }, [region, town]);
+      console.log('Applying filters:', filters);
+      const fetchedWalks = await fetchWalks(filters);
+      setWalks(fetchedWalks);
+    } catch (error) {
+      console.error('Error loading walks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadWalks();
+}, [region, town]);
 
   if (loading) return <div>Loading...</div>;
 
