@@ -5,51 +5,52 @@ import { fetchWalks } from '../api/strapi';
 import { MapPin, Clock, Star } from 'lucide-react';
 
 const CategoryPage: React.FC = () => {
-  const { region, town } = useParams<{ region?: string; town?: string }>();
+  const { location } = useParams<{ location?: string }>();
   const [walks, setWalks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const loadWalks = async () => {
-    try {
-      setLoading(true);
-      let filters = {};
+  useEffect(() => {
+    const loadWalks = async () => {
+      try {
+        setLoading(true);
+        let filters = {};
 
-      if (town) {
-        filters = { town: town.toLowerCase() };
-      } else if (region) {
-        // If we're on a region page (like dover), we should filter by Town
-        filters = { town: region.toLowerCase() };
+        if (location) {
+          if (location.toLowerCase() === 'kent') {
+            // Show all walks for Kent
+            filters = {};
+          } else {
+            // Filter by town for specific locations
+            filters = { town: location };
+          }
+        }
+
+        const fetchedWalks = await fetchWalks(filters);
+        setWalks(fetchedWalks);
+      } catch (error) {
+        console.error('Error loading walks:', error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      console.log('Applying filters:', filters);
-      const fetchedWalks = await fetchWalks(filters);
-      setWalks(fetchedWalks);
-    } catch (error) {
-      console.error('Error loading walks:', error);
-    } finally {
-      setLoading(false);
-    }
+    loadWalks();
+  }, [location]);
+
+  const getPageTitle = () => {
+    if (!location) return 'Dog Walks in Kent';
+    return `Dog Walks in ${location.charAt(0).toUpperCase() + location.slice(1)}`;
   };
-
-  loadWalks();
-}, [region, town]);
-
-  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">
-        {town ? `Dog Walks in ${town}` : 
-         region ? `Dog Walks in ${region}` : 
-         'All Dog Walks'}
-      </h1>
-
+      <h1 className="text-4xl font-bold text-gray-800 mb-8">{getPageTitle()}</h1>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {walks.map((walk) => (
           <Link 
             key={walk.id}
-            to={`/dog-walks/${walk.slug}`}
+            to={`/walks/${walk.slug}`}
             className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
           >
             {walk.image?.[0]?.formats?.medium?.url && (
