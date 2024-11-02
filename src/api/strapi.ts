@@ -103,11 +103,11 @@ export const fetchWalks = async (filters?: {
     let queryString = '/walks?populate=*';
     
     if (filters?.town) {
-      // Case-insensitive exact match for town
-      queryString += `&filters[Town][$eqi]=${encodeURIComponent(filters.town)}`;
+      // Exact match for town
+      queryString += `&filters[Town][$eqi]=${filters.town}`;
     } else if (filters?.region) {
-      // Case-insensitive match for region in Town field
-      queryString += `&filters[Town][$eqi]=${encodeURIComponent(filters.region)}`;
+      // Match exact region
+      queryString += `&filters[Region][$eqi]=${filters.region}`;
     }
 
     console.log('Query string:', queryString);
