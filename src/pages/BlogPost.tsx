@@ -93,6 +93,9 @@ const ImageModal: React.FC<{
 
 const BlogPost: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  
+console.log('BlogPost mounted with slug:', slug);
+  
   const [post, setPost] = useState<WalkData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
