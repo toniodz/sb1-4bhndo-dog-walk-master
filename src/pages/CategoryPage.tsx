@@ -63,7 +63,7 @@ const CategoryPage: React.FC = () => {
           // In CategoryPage.tsx, update the Link component
 <Link 
   key={walk.id}
-  to={`/${walk.slug}`}
+  to={`/${dog-walks.slug}`}
   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
 >
             {walk.image?.[0]?.formats?.medium?.url && (
