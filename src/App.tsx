@@ -21,10 +21,10 @@ function App() {
 <Routes>
   <Route path="/" element={<HomePage />} />
   <Route path="/search" element={<SearchPage />} />
-  <Route path="/dog-walks" element={<CategoryPage />} />
-  <Route path="/dog-walks/location/:region" element={<CategoryPage />} />
-  <Route path="/dog-walks/location/:region/:town" element={<CategoryPage />} />
-  <Route path="/dog-walks/:slug" element={<BlogPost />} /> {/* Move this up */}
+  <Route path="/dog-walks-in-kent" element={<CategoryPage />} />
+  <Route path="/dog-walks-in-dover" element={<CategoryPage />} />
+  <Route path="/dog-walks-in-:location" element={<CategoryPage />} />
+  <Route path="/walks/:slug" element={<BlogPost />} />
   <Route path="*" element={<div>Page not found</div>} /> {/* Add 404 route */}
 </Routes>
 
