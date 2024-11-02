@@ -105,11 +105,8 @@ export const fetchWalks = async (filters?: {
     let queryString = '/walks?populate=*';
     
     if (filters?.town) {
-      // Exact match for town
+      // For both town and region pages, we filter by Town
       queryString += `&filters[Town][$eqi]=${filters.town}`;
-    } else if (filters?.region) {
-      // Match exact region - using lowercase 'region'
-      queryString += `&filters[region][$eqi]=${filters.region}`;
     }
 
     console.log('Query string:', queryString);
@@ -118,7 +115,7 @@ export const fetchWalks = async (filters?: {
     
     if (response.data?.data) {
       const walks = response.data.data;
-      console.log(`Found ${walks.length} walks matching filters:`, filters);
+      console.log(`Found ${walks.length} walks`);
       return walks;
     }
     return [];
