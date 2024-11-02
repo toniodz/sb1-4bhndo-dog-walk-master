@@ -6,6 +6,9 @@ import { MapPin, Clock, Star } from 'lucide-react';
 
 const CategoryPage: React.FC = () => {
   const { region, town } = useParams<{ region?: string; town?: string }>();
+
+  console.log('CategoryPage mounted with params:', { region, town })
+  
   const [walks, setWalks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
