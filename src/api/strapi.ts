@@ -9,6 +9,8 @@ interface Walk {
   duration: string;
   difficulty: string;
   overview?: string;
+  Town: string;
+  Region: string;
   coordinates?: {
     lat: number;
     lng: number;
