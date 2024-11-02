@@ -108,8 +108,8 @@ export const fetchWalks = async (filters?: {
       // Exact match for town
       queryString += `&filters[Town][$eqi]=${filters.town}`;
     } else if (filters?.region) {
-      // Match exact region
-      queryString += `&filters[Region][$eqi]=${filters.region}`;
+      // Match exact region - using lowercase 'region'
+      queryString += `&filters[region][$eqi]=${filters.region}`;
     }
 
     console.log('Query string:', queryString);
