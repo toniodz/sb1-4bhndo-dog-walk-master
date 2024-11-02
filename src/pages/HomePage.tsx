@@ -101,7 +101,7 @@ const HomePage: React.FC = () => {
            {walks.map((walk) => (
              <Link 
   key={walk.id} 
-  to={`/dog-walks/${walk.slug}`}  // Changed from /blog to /dog-walks
+  to={`/walks/${walk.slug}`}  // Changed from /blog to /dog-walks
   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
 >
                {walk.image?.url && (
