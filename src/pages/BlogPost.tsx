@@ -126,8 +126,8 @@ console.log('BlogPost mounted with slug:', slug);
 
 const breadcrumbItems = [
   { label: 'Dog Walks', path: '/dog-walks' },
-  { label: post.Town, path: `/dog-walks/${post.Town?.toLowerCase()}` },
-  { label: post.Title, path: `/${post.slug}` }
+  { label: post.Town, path: `/dog-walks/location/${post.Town?.toLowerCase()}` },
+  { label: post.Title, path: `/dog-walks/${post.slug}` }
 ];
   
   const imageUrl = post.image?.[0]?.formats?.large?.url || post.image?.[0]?.url;
