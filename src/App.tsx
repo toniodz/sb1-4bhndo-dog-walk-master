@@ -20,13 +20,12 @@ function App() {
             <ErrorBoundary>
 <Routes>
   <Route path="/" element={<HomePage />} />
-  {/* Put specific routes first to prevent slug conflicts */}
   <Route path="/search" element={<SearchPage />} />
   <Route path="/dog-walks" element={<CategoryPage />} />
-  <Route path="/dog-walks/:region" element={<CategoryPage />} />
-  <Route path="/dog-walks/:region/:town" element={<CategoryPage />} />
-  {/* Put the slug route last so it doesn't catch other routes */}
-  <Route path="/:slug" element={<BlogPost />} />
+  <Route path="/dog-walks/location/:region" element={<CategoryPage />} />
+  <Route path="/dog-walks/location/:region/:town" element={<CategoryPage />} />
+  <Route path="/dog-walks/:slug" element={<BlogPost />} /> {/* Move this up */}
+  <Route path="*" element={<div>Page not found</div>} /> {/* Add 404 route */}
 </Routes>
 
             </ErrorBoundary>
