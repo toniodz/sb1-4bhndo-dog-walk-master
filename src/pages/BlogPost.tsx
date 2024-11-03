@@ -32,10 +32,10 @@ interface WalkData {
 const SocialShare: React.FC<{ url: string; title: string; description: string }> = ({ url, title, description }) => {
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
+  const encodedDescription = encodeURIComponent(description);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(url);
-    // You could add a toast notification here
   };
 
   return (
