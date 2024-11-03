@@ -240,22 +240,21 @@ const BlogPost: React.FC = () => {
         />
 
         {/* Image Gallery Section */}
-        {post.image && post.image.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {post.image.map((image, index) => (
-                <img
-                  key={index}
-                  src={image.formats.medium.url}
-                  alt={`${post.Title} - Image ${index + 1}`}
-                  className="w-full h-48 object-cover rounded-lg"
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+       {post.image && post.image.length > 1 && (
+         <div className="mb-8">
+           <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery</h2>
+           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+             {post.image.slice(1).map((image, index) => (
+               <img
+                 key={index}
+                 src={image.formats.medium.url}
+                 alt={`${post.Title} - Image ${index + 2}`}
+                 className="w-full h-48 object-cover rounded-lg"
+               />
+             ))}
+           </div>
+         </div>
+       )}
 
         {post.website && (
           <div className="mb-8">
