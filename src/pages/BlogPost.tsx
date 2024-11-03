@@ -42,7 +42,7 @@ const SocialShare: React.FC<{ url: string; title: string; description: string }>
     <div className="flex items-center gap-4">
       <span className="text-sm font-medium text-gray-600">Share:</span>
       
-      
+      <a
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
@@ -52,7 +52,7 @@ const SocialShare: React.FC<{ url: string; title: string; description: string }>
         <Facebook className="h-5 w-5" />
       </a>
 
-      
+      <a
         href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
         target="_blank"
         rel="noopener noreferrer"
