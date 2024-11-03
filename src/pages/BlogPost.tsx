@@ -5,6 +5,7 @@ import { MapPin, Clock, Star, Building, Facebook, Twitter, Link as LinkIcon } fr
 import { fetchWalkBySlug, getRelatedWalks } from '../api/strapi';
 import Map from '../components/Map';
 import Breadcrumbs from '../components/Breadcrumbs';
+import SocialShare from '../components/SocialShare';
 import { Helmet } from 'react-helmet-async';
 
 interface WalkData {
@@ -261,6 +262,14 @@ const BlogPost: React.FC = () => {
            </div>
          )}
        </div>
+
+       <div className="border-t border-gray-200 pt-6 mb-8">
+  <SocialShare 
+    url={pageUrl}
+    title={post.Title}
+    description={`Explore ${post.Title} - A ${post.difficulty} dog walk in ${post.Town}, Kent`}
+  />
+</div>
 
        {post.address && (
          <div className="mb-8 h-96">
