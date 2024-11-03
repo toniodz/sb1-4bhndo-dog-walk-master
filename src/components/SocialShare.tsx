@@ -24,6 +24,7 @@ const SocialShare: React.FC<SocialShareProps> = ({ url, title, description }) =>
     <div className="flex items-center gap-4">
       <span className="text-sm font-medium text-gray-600">Share:</span>
       
+      <a
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
@@ -31,7 +32,8 @@ const SocialShare: React.FC<SocialShareProps> = ({ url, title, description }) =>
       >
         <Facebook size={20} />
       </a>
-      
+
+      <a
         href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
         target="_blank"
         rel="noopener noreferrer"
@@ -39,6 +41,7 @@ const SocialShare: React.FC<SocialShareProps> = ({ url, title, description }) =>
       >
         <Twitter size={20} />
       </a>
+
       <button
         onClick={copyToClipboard}
         className="text-gray-600 hover:text-gray-700 transition-colors"
@@ -50,3 +53,4 @@ const SocialShare: React.FC<SocialShareProps> = ({ url, title, description }) =>
 };
 
 export default SocialShare;
+
