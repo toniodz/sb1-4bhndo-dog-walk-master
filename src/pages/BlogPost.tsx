@@ -11,23 +11,86 @@ interface WalkData {
   id: number;
   Title: string;
   slug: string;
-  rating: number | null;
-  Town: string;
+  rating: number;
   address: string | null;
   overview: string;
   website: string | null;
   duration: string;
   difficulty: string;
-  createdAt: string;
-  updatedAt: string;
+  coordinates: { lat: number; lng: number; } | null;
+  Town?: string;
+  Features2?: string[];
+  Terrain2?: string[];
   image: Array<{
+    url: string;
     formats: {
       large: { url: string; };
       medium: { url: string; };
       small: { url: string; };
     };
   }>;
+  gallery?: Array<{
+    url: string;
+    formats: {
+      large: { url: string; };
+      medium: { url: string; };
+      small: { url: string; };
+    };
+  }>;
+  seo: {
+    metaTitle: string;
+    metaDescription: string;
+  };
 }
+
+const ImageModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  images: any[];
+  currentIndex: number;
+  onNext: () => void;
+  onPrevious: () => void;
+}> = ({ isOpen, onClose, images, currentIndex, onNext, onPrevious }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white hover:text-gray-300"
+        aria-label="Close gallery"
+      >
+        <X size={24} />
+      </button>
+
+      <button
+        onClick={onPrevious}
+        className="absolute left-4 text-white hover:text-gray-300"
+        aria-label="Previous image"
+      >
+        <ChevronLeft size={36} />
+      </button>
+
+      <img
+        src={images[currentIndex]?.formats?.large?.url}
+        alt={`Gallery image ${currentIndex + 1}`}
+        className="max-h-[85vh] max-w-[90vw] object-contain"
+      />
+
+      <button
+        onClick={onNext}
+        className="absolute right-4 text-white hover:text-gray-300"
+        aria-label="Next image"
+      >
+        <ChevronRight size={36} />
+      </button>
+
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white">
+        {currentIndex + 1} / {images.length}
+      </div>
+    </div>
+  );
+};
 
 const SocialShare: React.FC<{ url: string; title: string; description: string }> = ({ url, title, description }) => {
   const encodedUrl = encodeURIComponent(url);
