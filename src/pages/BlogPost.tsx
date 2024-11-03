@@ -43,7 +43,7 @@ const SocialShare: React.FC<{ url: string; title: string; description: string }>
       <span className="text-sm font-medium text-gray-600">Share:</span>
       
       
-        href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+      <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-600 hover:text-blue-700 transition-colors"
