@@ -255,6 +255,8 @@ const BlogPost: React.FC = () => {
  const [relatedWalks, setRelatedWalks] = useState<WalkData[]>([]);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState<string | null>(null);
+ const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+ const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
  useEffect(() => {
    const fetchData = async () => {
