@@ -1,4 +1,4 @@
-// src/pages/BlogPost.tsx
+// src/pages/BlogPost.tsx - PART 1
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Clock, Star, Building, Facebook, Twitter, Link as LinkIcon } from 'lucide-react';
@@ -29,13 +29,22 @@ interface WalkData {
   }>;
 }
 
-const SocialShare: React.FC<{ url: string; title: string; description: string }> = ({ url, title, description }) => {
+// Separate SocialShare component with fixed JSX
+const SocialShare: React.FC<{ 
+  url: string; 
+  title: string; 
+  description: string; 
+}> = ({ url, title, description }) => {
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
-  const encodedDescription = encodeURIComponent(description);
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(url);
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      // Could add a toast notification here
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
   };
 
   return (
@@ -73,11 +82,11 @@ const SocialShare: React.FC<{ url: string; title: string; description: string }>
   );
 };
 
+// Schema markup function
 const getEnhancedSchemaMarkup = (post: WalkData, relatedWalks: WalkData[]) => {
   const baseUrl = 'https://dogwalksnearme.uk';
   
   return [
-    // Article Schema
     {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -104,8 +113,6 @@ const getEnhancedSchemaMarkup = (post: WalkData, relatedWalks: WalkData[]) => {
         "@id": `${baseUrl}/walks/${post.slug}`
       }
     },
-
-    // Place Schema
     {
       "@context": "https://schema.org",
       "@type": "Place",
@@ -144,8 +151,6 @@ const getEnhancedSchemaMarkup = (post: WalkData, relatedWalks: WalkData[]) => {
         }
       ]
     },
-
-    // Trail Schema
     {
       "@context": "https://schema.org",
       "@type": "Trail",
@@ -166,8 +171,6 @@ const getEnhancedSchemaMarkup = (post: WalkData, relatedWalks: WalkData[]) => {
         }
       }
     },
-
-    // If you have related walks, add a recommendation schema
     ...(relatedWalks.length > 0 ? [{
       "@context": "https://schema.org",
       "@type": "Recommendation",
