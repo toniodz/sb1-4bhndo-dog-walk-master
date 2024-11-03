@@ -8,26 +8,46 @@ import { Helmet } from 'react-helmet-async';
 
 interface WalkData {
   id: number;
-  Title: string;
-  slug: string;
-  rating: number | null;
-  Town: string;
-  address: string | null;
-  overview: string;
-  website: string | null;
-  duration: string;
-  difficulty: string;
-  terrain2: string | null;
-  features2: string | null;
-  createdAt: string;
-  updatedAt: string;
-  image: Array<{
-    formats: {
-      large: { url: string; };
-      medium: { url: string; };
-      small: { url: string; };
+  attributes: {
+    Title: string;
+    slug: string;
+    rating: number | null;
+    Town: string;
+    address: string | null;
+    overview: string;
+    website: string | null;
+    duration: string;
+    difficulty: string;
+    terrain2: string | null;
+    features2: string | null;
+    createdAt: string;
+    updatedAt: string;
+    featuredImage: {
+      data: {
+        attributes: {
+          url: string;
+          formats: {
+            large: { url: string; };
+            medium: { url: string; };
+            small: { url: string; };
+          };
+        };
+      };
     };
-  }>;
+    gallery: {
+      data: Array<{
+        id: number;
+        attributes: {
+          url: string;
+          formats: {
+            large: { url: string; };
+            medium: { url: string; };
+            small: { url: string; };
+          };
+        };
+      }>;
+    };
+  };
 }
 
 const SocialShare: React.FC<{ url: string; title: string; description: string }> = ({ url, title, description }) => {
@@ -73,11 +93,6 @@ const SocialShare: React.FC<{ url: string; title: string; description: string }>
   );
 };
 
-// Schema markup function remains the same
-const getEnhancedSchemaMarkup = (post: WalkData, relatedWalks: WalkData[]) => {
-  // ... existing schema markup code ...
-};
-
 const BlogPost: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<WalkData | null>(null);
@@ -113,12 +128,12 @@ const BlogPost: React.FC = () => {
     return [
       { label: 'Dog Walks in Kent', path: '/dog-walks-in-kent' },
       { 
-        label: `Dog Walks in ${post.Town}`, 
-        path: `/dog-walks-in-${post.Town.toLowerCase()}` 
+        label: `Dog Walks in ${post.attributes.Town}`, 
+        path: `/dog-walks-in-${post.attributes.Town.toLowerCase()}` 
       },
       { 
-        label: post.Title, 
-        path: `/walks/${post.slug}` 
+        label: post.attributes.Title, 
+        path: `/walks/${post.attributes.slug}` 
       }
     ];
   };
@@ -149,22 +164,21 @@ const BlogPost: React.FC = () => {
     );
   }
 
-  const mainImage = post.image?.[0]?.formats?.large?.url;
-  const pageUrl = `https://dogwalksnearme.uk/walks/${post.slug}`;
+  const { attributes } = post;
+  const mainImage = attributes.featuredImage?.data?.attributes?.formats?.large?.url;
+  const galleryImages = attributes.gallery?.data || [];
+  const pageUrl = `https://dogwalksnearme.uk/walks/${attributes.slug}`;
 
   return (
     <>
       <Helmet>
-        <title>{`${post.Title} - Dog Walks Near Me`}</title>
-        <meta name="description" content={`Explore ${post.Title} - A ${post.difficulty} dog walk in ${post.Town}, Kent. ${post.duration} walking route perfect for you and your dog.`} />
-        <meta property="og:title" content={`${post.Title} - Dog Walks Near Me`} />
-        <meta property="og:description" content={`Explore ${post.Title} - A ${post.difficulty} dog walk in ${post.Town}, Kent. ${post.duration} walking route perfect for you and your dog.`} />
+        <title>{`${attributes.Title} - Dog Walks Near Me`}</title>
+        <meta name="description" content={`Explore ${attributes.Title} - A ${attributes.difficulty} dog walk in ${attributes.Town}, Kent. ${attributes.duration} walking route perfect for you and your dog.`} />
+        <meta property="og:title" content={`${attributes.Title} - Dog Walks Near Me`} />
+        <meta property="og:description" content={`Explore ${attributes.Title} - A ${attributes.difficulty} dog walk in ${attributes.Town}, Kent. ${attributes.duration} walking route perfect for you and your dog.`} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={pageUrl} />
         {mainImage && <meta property="og:image" content={mainImage} />}
-        <script type="application/ld+json">
-          {JSON.stringify(getEnhancedSchemaMarkup(post, relatedWalks))}
-        </script>
       </Helmet>
 
       <article className="max-w-3xl mx-auto px-4">
@@ -173,49 +187,47 @@ const BlogPost: React.FC = () => {
         {mainImage && (
           <img 
             src={mainImage}
-            alt={`${post.Title} dog walking route`}
+            alt={`${attributes.Title} dog walking route`}
             className="w-full h-64 md:h-96 object-cover rounded-lg mb-6"
           />
         )}
 
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">{post.Title}</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">{attributes.Title}</h1>
 
         <div className="flex flex-wrap gap-4 mb-6">
           <div className="flex items-center text-gray-600">
             <Building className="h-5 w-5 mr-2" />
-            <span>{post.Town}</span>
+            <span>{attributes.Town}</span>
           </div>
           
           <div className="flex items-center text-gray-600">
             <Clock className="h-5 w-5 mr-2" />
-            <span>{post.duration}</span>
+            <span>{attributes.duration}</span>
           </div>
           
           <div className="flex items-center text-gray-600">
             <MapPin className="h-5 w-5 mr-2" />
-            <span>{post.difficulty}</span>
+            <span>{attributes.difficulty}</span>
           </div>
 
-          {post.rating && (
+          {attributes.rating && (
             <div className="flex items-center text-gray-600">
               <Star className="h-5 w-5 mr-2" />
-              <span>{post.rating.toFixed(1)}</span>
-            </div>
-          )}
-          
-          {/* Add terrain2 display */}
-          {post.terrain2 && (
-            <div className="flex items-center text-gray-600">
-              <Compass className="h-5 w-5 mr-2" />
-              <span>{post.terrain2}</span>
+              <span>{attributes.rating.toFixed(1)}</span>
             </div>
           )}
 
-          {/* Add features2 display */}
-          {post.features2 && (
+          {attributes.terrain2 && (
+            <div className="flex items-center text-gray-600">
+              <Compass className="h-5 w-5 mr-2" />
+              <span>{attributes.terrain2}</span>
+            </div>
+          )}
+
+          {attributes.features2 && (
             <div className="flex items-center text-gray-600">
               <List className="h-5 w-5 mr-2" />
-              <span>{post.features2}</span>
+              <span>{attributes.features2}</span>
             </div>
           )}
         </div>
@@ -223,50 +235,50 @@ const BlogPost: React.FC = () => {
         <div className="border-t border-gray-200 pt-6 mb-8">
           <SocialShare 
             url={pageUrl}
-            title={post.Title}
-            description={`Explore ${post.Title} - A ${post.difficulty} dog walk in ${post.Town}, Kent`}
+            title={attributes.Title}
+            description={`Explore ${attributes.Title} - A ${attributes.difficulty} dog walk in ${attributes.Town}, Kent`}
           />
         </div>
 
-        {post.address && (
+        {attributes.address && (
           <div className="mb-8 h-96">
-            <Map address={post.address} />
+            <Map address={attributes.address} />
           </div>
         )}
 
         <div 
           className="prose prose-lg max-w-none mb-8"
-          dangerouslySetInnerHTML={{ __html: post.overview }}
+          dangerouslySetInnerHTML={{ __html: attributes.overview }}
         />
 
-      {/* Updated Gallery Section */}
-      {post.image && post.image.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery ({post.image.length} Images)</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {/* Remove the slice(1) and map over all images */}
-            {post.image.map((image, index) => {
-              console.log(`Rendering image ${index}:`, image.formats.medium.url);
-              return (
-                <img
-                  key={index}
-                  src={image.formats.medium.url}
-                  alt={`${post.Title} - Image ${index + 1}`}
-                  className="w-full h-48 object-cover rounded-lg hover:opacity-90 transition-opacity duration-300"
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                  onError={(e) => console.error(`Error loading image ${index}:`, e)}
-                />
-              );
-            })}
+        {galleryImages.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Gallery ({galleryImages.length} Images)
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {galleryImages.map((image, index) => (
+                <div key={image.id} className="relative">
+                  <img
+                    src={image.attributes.formats.medium.url}
+                    alt={`${attributes.Title} - Image ${index + 1}`}
+                    className="w-full h-48 object-cover rounded-lg hover:opacity-90 transition-opacity duration-300"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                  />
+                  <div className="absolute bottom-0 right-0 bg-black bg-opacity-50 text-white px-2 py-1 text-sm rounded-tl">
+                    {index + 1}/{galleryImages.length}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-        {post.website && (
+        {attributes.website && (
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">More Information</h2>
             <a 
-              href={post.website}
+              href={attributes.website}
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-primary hover:underline"
@@ -278,26 +290,26 @@ const BlogPost: React.FC = () => {
 
         {relatedWalks.length > 0 && (
           <div className="border-t border-gray-200 pt-8 mt-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">More Walks in {post.Town}</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">More Walks in {attributes.Town}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {relatedWalks.map((walk) => (
                 <Link
                   key={walk.id}
-                  to={`/walks/${walk.slug}`}
+                  to={`/walks/${walk.attributes.slug}`}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-duration-300"
                 >
-                  {walk.image?.[0]?.formats?.medium?.url && (
+                  {walk.attributes.featuredImage?.data?.attributes?.formats?.medium?.url && (
                     <img
-                      src={walk.image[0].formats.medium.url}
-                      alt={walk.Title}
+                      src={walk.attributes.featuredImage.data.attributes.formats.medium.url}
+                      alt={walk.attributes.Title}
                       className="w-full h-48 object-cover"
                     />
                   )}
                   <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-2">{walk.Title}</h3>
+                    <h3 className="font-semibold text-lg mb-2">{walk.attributes.Title}</h3>
                     <div className="flex items-center text-gray-600">
                       <Clock className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{walk.duration}</span>
+                      <span className="text-sm">{walk.attributes.duration}</span>
                     </div>
                   </div>
                 </Link>
