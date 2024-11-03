@@ -125,6 +125,32 @@ export const fetchWalks = async (filters?: {
   }
 };
 
+export const getRelatedWalks = async (currentWalk: WalkData) => {
+  try {
+    // Get walks from same town but exclude current walk
+    const queryString = `/walks?populate=*&filters[Town][$eq]=${currentWalk.Town}&filters[id][$ne]=${currentWalk.id}&pagination[limit]=3`;
+    
+    const response = await strapiAPI.get<StrapiResponse>(queryString);
+    
+    if (response.data?.data) {
+      const walks = response.data.data;
+      // If we don't have enough walks from the same town, we could add more based on difficulty
+      if (walks.length < 3) {
+        const difficultyQuery = `/walks?populate=*&filters[difficulty][$eq]=${currentWalk.difficulty}&filters[id][$ne]=${currentWalk.id}&filters[Town][$ne]=${currentWalk.Town}&pagination[limit]=${3 - walks.length}`;
+        const difficultyResponse = await strapiAPI.get<StrapiResponse>(difficultyQuery);
+        if (difficultyResponse.data?.data) {
+          walks.push(...difficultyResponse.data.data);
+        }
+      }
+      return walks.slice(0, 3);
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching related walks:', error);
+    return [];
+  }
+};
+
 // in strapi.ts
 export const fetchWalkBySlug = async (slug: string) => {
   try {
