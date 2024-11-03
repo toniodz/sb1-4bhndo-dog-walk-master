@@ -19,6 +19,8 @@ interface WalkData {
   website: string | null;
   duration: string;
   difficulty: string;
+  terrain2: string | null;    // Add this field
+  features2: string | null;   // Add this field
   createdAt: string;
   updatedAt: string;
   image: Array<{
@@ -263,6 +265,23 @@ const BlogPost: React.FC = () => {
          )}
        </div>
 
+             {/* Add the new terrain2 display */}
+      {post.terrain2 && (
+        <div className="flex items-center text-gray-600">
+          <MapPin className="h-5 w-5 mr-2" />
+          <span>Terrain: {post.terrain2}</span>
+        </div>
+      )}
+
+      {/* Add the new features2 display */}
+      {post.features2 && (
+        <div className="flex items-center text-gray-600">
+          <Star className="h-5 w-5 mr-2" />
+          <span>Features: {post.features2}</span>
+        </div>
+      )}
+    </div>
+
        <div className="border-t border-gray-200 pt-6 mb-8">
   <SocialShare 
     url={pageUrl}
@@ -304,21 +323,23 @@ const BlogPost: React.FC = () => {
          </div>
        )}
 
-       {post.image && post.image.length > 1 && (
-         <div className="mb-8">
-           <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery</h2>
-           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-             {post.image.slice(1).map((image, index) => (
-               <img
-                 key={index}
-                 src={image.formats.medium.url}
-                 alt={`${post.Title} - Image ${index + 2}`}
-                 className="w-full h-48 object-cover rounded-lg"
-               />
-             ))}
-           </div>
-         </div>
-       )}
+    {/* Update the gallery section to ensure it displays correctly */}
+    {post.image && post.image.length > 1 && (
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {post.image.map((image, index) => (
+            <img
+              key={index}
+              src={image.formats.medium.url}
+              alt={`${post.Title} - Image ${index + 1}`}
+              className="w-full h-48 object-cover rounded-lg"
+              loading="lazy"
+            />
+          ))}
+        </div>
+      </div>
+    )}
 
        {relatedWalks.length > 0 && (
          <div className="border-t border-gray-200 pt-8 mt-8">
