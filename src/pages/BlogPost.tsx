@@ -18,6 +18,8 @@ interface WalkData {
   website: string | null;
   duration: string;
   difficulty: string;
+  terrain2: string | null;    // Add this field
+  features2: string | null;   // Add this field
   createdAt: string;
   updatedAt: string;
   image: Array<{
