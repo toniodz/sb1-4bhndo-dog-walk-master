@@ -239,19 +239,25 @@ const BlogPost: React.FC = () => {
           dangerouslySetInnerHTML={{ __html: post.overview }}
         />
 
-        {/* Image Gallery Section */}
+      {/* Updated Gallery Section */}
+      {post.image && post.image.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery ({post.image.length} Images)</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {post.image.map((image, index) => (
-              <img
-                key={index}
-                src={image.formats.medium.url}
-                alt={`${post.Title} - Image ${index + 1}`}
-                className="w-full h-48 object-cover rounded-lg hover:opacity-90 transition-opacity duration-300"
-                loading={index === 0 ? 'eager' : 'lazy'}
-              />
-            ))}
+            {/* Remove the slice(1) and map over all images */}
+            {post.image.map((image, index) => {
+              console.log(`Rendering image ${index}:`, image.formats.medium.url);
+              return (
+                <img
+                  key={index}
+                  src={image.formats.medium.url}
+                  alt={`${post.Title} - Image ${index + 1}`}
+                  className="w-full h-48 object-cover rounded-lg hover:opacity-90 transition-opacity duration-300"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  onError={(e) => console.error(`Error loading image ${index}:`, e)}
+                />
+              );
+            })}
           </div>
         </div>
       )}
