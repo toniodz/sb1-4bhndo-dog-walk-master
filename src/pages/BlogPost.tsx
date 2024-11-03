@@ -1,11 +1,10 @@
-// src/pages/BlogPost.tsx - PART 1
+// src/pages/BlogPost.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Clock, Star, Building, Facebook, Twitter, Link as LinkIcon } from 'lucide-react';
 import { fetchWalkBySlug, getRelatedWalks } from '../api/strapi';
 import Map from '../components/Map';
 import Breadcrumbs from '../components/Breadcrumbs';
-import SocialShare from '../components/SocialShare';
 import { Helmet } from 'react-helmet-async';
 
 interface WalkData {
@@ -19,8 +18,6 @@ interface WalkData {
   website: string | null;
   duration: string;
   difficulty: string;
-  terrain2: string | null;    // Add this field
-  features2: string | null;   // Add this field
   createdAt: string;
   updatedAt: string;
   image: Array<{
@@ -32,11 +29,55 @@ interface WalkData {
   }>;
 }
 
-// Schema markup function
+const SocialShare: React.FC<{ url: string; title: string; description: string }> = ({ url, title, description }) => {
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(title);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(url);
+    // You could add a toast notification here
+  };
+
+  return (
+    <div className="flex items-center gap-4">
+      <span className="text-sm font-medium text-gray-600">Share:</span>
+      
+      
+        href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:text-blue-700 transition-colors"
+        aria-label="Share on Facebook"
+      >
+        <Facebook className="h-5 w-5" />
+      </a>
+
+      
+        href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sky-500 hover:text-sky-600 transition-colors"
+        aria-label="Share on Twitter"
+      >
+        <Twitter className="h-5 w-5" />
+      </a>
+
+      <button
+        onClick={copyToClipboard}
+        className="text-gray-600 hover:text-gray-700 transition-colors"
+        aria-label="Copy link"
+      >
+        <LinkIcon className="h-5 w-5" />
+      </button>
+    </div>
+  );
+};
+
 const getEnhancedSchemaMarkup = (post: WalkData, relatedWalks: WalkData[]) => {
   const baseUrl = 'https://dogwalksnearme.uk';
   
   return [
+    // Article Schema
     {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -63,6 +104,8 @@ const getEnhancedSchemaMarkup = (post: WalkData, relatedWalks: WalkData[]) => {
         "@id": `${baseUrl}/walks/${post.slug}`
       }
     },
+
+    // Place Schema
     {
       "@context": "https://schema.org",
       "@type": "Place",
@@ -101,6 +144,8 @@ const getEnhancedSchemaMarkup = (post: WalkData, relatedWalks: WalkData[]) => {
         }
       ]
     },
+
+    // Trail Schema
     {
       "@context": "https://schema.org",
       "@type": "Trail",
@@ -121,6 +166,8 @@ const getEnhancedSchemaMarkup = (post: WalkData, relatedWalks: WalkData[]) => {
         }
       }
     },
+
+    // If you have related walks, add a recommendation schema
     ...(relatedWalks.length > 0 ? [{
       "@context": "https://schema.org",
       "@type": "Recommendation",
@@ -265,31 +312,6 @@ const BlogPost: React.FC = () => {
          )}
        </div>
 
-             {/* Add the new terrain2 display */}
-      {post.terrain2 && (
-        <div className="flex items-center text-gray-600">
-          <MapPin className="h-5 w-5 mr-2" />
-          <span>Terrain: {post.terrain2}</span>
-        </div>
-      )}
-
-      {/* Add the new features2 display */}
-      {post.features2 && (
-        <div className="flex items-center text-gray-600">
-          <Star className="h-5 w-5 mr-2" />
-          <span>Features: {post.features2}</span>
-        </div>
-      )}
-    </div>
-
-       <div className="border-t border-gray-200 pt-6 mb-8">
-  <SocialShare 
-    url={pageUrl}
-    title={post.Title}
-    description={`Explore ${post.Title} - A ${post.difficulty} dog walk in ${post.Town}, Kent`}
-  />
-</div>
-
        {post.address && (
          <div className="mb-8 h-96">
            <Map address={post.address} />
@@ -323,23 +345,21 @@ const BlogPost: React.FC = () => {
          </div>
        )}
 
-    {/* Update the gallery section to ensure it displays correctly */}
-    {post.image && post.image.length > 1 && (
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {post.image.map((image, index) => (
-            <img
-              key={index}
-              src={image.formats.medium.url}
-              alt={`${post.Title} - Image ${index + 1}`}
-              className="w-full h-48 object-cover rounded-lg"
-              loading="lazy"
-            />
-          ))}
-        </div>
-      </div>
-    )}
+       {post.image && post.image.length > 1 && (
+         <div className="mb-8">
+           <h2 className="text-2xl font-bold text-gray-800 mb-4">Gallery</h2>
+           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+             {post.image.slice(1).map((image, index) => (
+               <img
+                 key={index}
+                 src={image.formats.medium.url}
+                 alt={`${post.Title} - Image ${index + 2}`}
+                 className="w-full h-48 object-cover rounded-lg"
+               />
+             ))}
+           </div>
+         </div>
+       )}
 
        {relatedWalks.length > 0 && (
          <div className="border-t border-gray-200 pt-8 mt-8">
