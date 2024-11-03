@@ -296,6 +296,17 @@ const BlogPost: React.FC = () => {
    ];
  };
 
+  const imageUrl = post.image?.[0]?.formats?.large?.url || post.image?.[0]?.url;
+  const allImages = [...(post.image || []), ...(post.gallery || [])];
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+  };
+
+  const handlePreviousImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  }; 
+
  if (loading) {
    return (
      <div className="flex justify-center items-center min-h-[400px]">
