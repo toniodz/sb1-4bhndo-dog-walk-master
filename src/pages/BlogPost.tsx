@@ -30,18 +30,18 @@ interface WalkData {
 }
 
 // Separate SocialShare component with fixed JSX
-const SocialShare: React.FC<{ 
+// First, create a separate SocialShare component
+const SocialShare = ({ url, title, description }: { 
   url: string; 
   title: string; 
   description: string; 
-}> = ({ url, title, description }) => {
+}) => {
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
 
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(url);
-      // Could add a toast notification here
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -56,9 +56,8 @@ const SocialShare: React.FC<{
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-600 hover:text-blue-700 transition-colors"
-        aria-label="Share on Facebook"
       >
-        <Facebook className="h-5 w-5" />
+        <Facebook size={20} />
       </a>
 
       
@@ -66,17 +65,15 @@ const SocialShare: React.FC<{
         target="_blank"
         rel="noopener noreferrer"
         className="text-sky-500 hover:text-sky-600 transition-colors"
-        aria-label="Share on Twitter"
       >
-        <Twitter className="h-5 w-5" />
+        <Twitter size={20} />
       </a>
 
       <button
         onClick={copyToClipboard}
         className="text-gray-600 hover:text-gray-700 transition-colors"
-        aria-label="Copy link"
       >
-        <LinkIcon className="h-5 w-5" />
+        <LinkIcon size={20} />
       </button>
     </div>
   );
