@@ -4,40 +4,51 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 
 interface BreadcrumbItem {
-  label: string;
-  path: string;
+ label: string;
+ path: string;
 }
 
 interface BreadcrumbsProps {
-  items: BreadcrumbItem[];
+ items: BreadcrumbItem[];
 }
 
 const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
-  return (
-    <nav aria-label="Breadcrumb" className="mb-4">
-      <ol className="flex items-center space-x-2 text-sm text-gray-600">
-        <li>
-          <Link to="/" className="hover:text-primary">
-            Home
-          </Link>
-        </li>
-        {items.map((item, index) => (
-          <React.Fragment key={item.path}>
-            <ChevronRight className="h-4 w-4 text-gray-400" />
-            <li>
-              {index === items.length - 1 ? (
-                <span className="text-gray-800">{item.label}</span>
-              ) : (
-                <Link to={item.path} className="hover:text-primary">
-                  {item.label}
-                </Link>
-              )}
-            </li>
-          </React.Fragment>
-        ))}
-      </ol>
-    </nav>
-  );
+ return (
+   <nav className="mb-6" aria-label="Breadcrumb">
+     <ol className="flex items-center space-x-2 text-sm text-gray-600">
+       <li>
+         <Link 
+           to="/" 
+           className="hover:text-primary transition-colors duration-200"
+         >
+           Home
+         </Link>
+       </li>
+
+       {items.map((item, index) => (
+         <React.Fragment key={item.path}>
+           <li className="flex items-center">
+             <ChevronRight className="h-4 w-4 text-gray-400" />
+             {index === items.length - 1 ? (
+               // Last item - no link, different style
+               <span className="ml-2 text-gray-800 font-medium">
+                 {item.label}
+               </span>
+             ) : (
+               // Not last item - show as link
+               <Link 
+                 to={item.path}
+                 className="ml-2 hover:text-primary transition-colors duration-200"
+               >
+                 {item.label}
+               </Link>
+             )}
+           </li>
+         </React.Fragment>
+       ))}
+     </ol>
+   </nav>
+ );
 };
 
 export default Breadcrumbs;
