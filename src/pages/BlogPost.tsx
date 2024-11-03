@@ -53,7 +53,7 @@ const SocialShare: React.FC<{ url: string; title: string; description: string }>
       </a>
 
       
-        href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+       <a href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
         target="_blank"
         rel="noopener noreferrer"
         className="text-sky-500 hover:text-sky-600 transition-colors"
