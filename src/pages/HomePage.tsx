@@ -86,56 +86,85 @@ const HomePage: React.FC = () => {
        </div>
      </section>
 
-     {/* Walks Section */}
-     <section className="py-16 bg-gray-50">
-       <div className="container mx-auto px-4">
-         <h2 className="text-3xl font-bold text-center mb-12">Featured Walks</h2>
-         
-         {error && (
-           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-             {error}
-           </div>
-         )}
-         
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-           {walks.map((walk) => (
-             <Link 
-  key={walk.id} 
-  to={`/walks/${walk.slug}`}  // Changed from /blog to /dog-walks
-  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
->
-               {walk.image?.url && (
-                 <img 
-                   src={`${import.meta.env.VITE_STRAPI_URL}${walk.image.url}`} 
-                   alt={walk.Title} 
-                   className="w-full h-48 object-cover"
-                 />
-               )}
-               <div className="p-4">
-                 <h3 className="text-xl font-semibold mb-2">{walk.Title}</h3>
-                 <div className="flex items-center text-gray-600 mb-2">
-                   <MapPin className="h-4 w-4 mr-1" />
-                   <span className="text-sm">{walk.address}</span>
-                 </div>
-                 <div className="flex items-center text-gray-600 mb-2">
-                   <Clock className="h-4 w-4 mr-1" />
-                   <span className="text-sm">{walk.duration}</span>
-                 </div>
-                 <div className="flex items-center text-gray-600">
-                   <Star className="h-4 w-4 mr-1" />
-                   <span className="text-sm">{walk.difficulty}</span>
-                 </div>
-                 {walk.rating && (
-                   <div className="mt-2 text-primary font-semibold">
-                     Rating: {walk.rating.toFixed(1)}
-                   </div>
-                 )}
-               </div>
-             </Link>
-           ))}
-         </div>
-       </div>
-     </section>
+{/* Walks Section */}
+<section className="py-16 bg-gray-50">
+  <div className="container mx-auto px-4">
+    <h2 className="text-3xl font-bold text-center mb-12">Featured Walks</h2>
+    
+    {error && (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+        <p className="font-medium">{error}</p>
+      </div>
+    )}
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {walks.map((walk) => (
+        <Link 
+          key={walk.id} 
+          to={`/walks/${walk.slug}`}
+          className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
+        >
+          <div className="relative aspect-video">
+            {walk.image?.url ? (
+              <img 
+                src={`${import.meta.env.VITE_STRAPI_URL}${walk.image.url}`}
+                alt={walk.Title || 'Dog walking route'}
+                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const placeholder = document.createElement('div');
+                  placeholder.className = "w-full h-48 bg-gray-200 flex items-center justify-center";
+                  placeholder.innerHTML = '<svg class="w-8 h-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>';
+                  e.currentTarget.parentElement.appendChild(placeholder);
+                }}
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                <Image className="w-8 h-8 text-gray-400" />
+              </div>
+            )}
+          </div>
+          
+          <div className="p-4">
+            <h3 className="text-xl font-semibold mb-2 text-gray-900">
+              {walk.Title || 'Unnamed Walk'}
+            </h3>
+            
+            <div className="space-y-2">
+              {walk.address && (
+                <div className="flex items-center text-gray-600">
+                  <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                  <span className="text-sm truncate">{walk.address}</span>
+                </div>
+              )}
+              
+              {walk.duration && (
+                <div className="flex items-center text-gray-600">
+                  <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                  <span className="text-sm">{walk.duration}</span>
+                </div>
+              )}
+              
+              {walk.difficulty && (
+                <div className="flex items-center text-gray-600">
+                  <Star className="h-4 w-4 mr-2 flex-shrink-0" />
+                  <span className="text-sm">{walk.difficulty}</span>
+                </div>
+              )}
+            </div>
+            
+            {walk.rating && (
+              <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                Rating: {walk.rating.toFixed(1)}
+              </div>
+            )}
+          </div>
+        </Link>
+      ))}
+    </div>
+  </div>
+</section>
 
      {/* CTA Section */}
      <section className="bg-primary text-white py-16">
