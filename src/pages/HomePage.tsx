@@ -93,12 +93,6 @@ import { MapPin, Clock, Star } from 'lucide-react'; // Remove Image import if yo
   <div className="container mx-auto px-4">
     <h2 className="text-3xl font-bold text-center mb-12">Featured Walks</h2>
     
-    {error && (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-        {error}
-      </div>
-    )}
-    
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {walks.map((walk) => (
         <Link 
