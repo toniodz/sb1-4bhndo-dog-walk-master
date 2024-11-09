@@ -1,6 +1,20 @@
 // App.tsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
+import BlogPost from './pages/BlogPost';
+import CategoryPage from './pages/CategoryPage';
+import SearchPage from './pages/SearchPage';
+import ErrorBoundary from './components/ErrorBoundary';
+
+// Redirect component for old URLs
+const RedirectToNewPattern: React.FC = () => {
+  const { location } = useParams<{ location: string }>();
+  return <Navigate to={`/dog-walks/kent/${location}`} replace />;
+};
 
 function App() {
   return (
@@ -39,11 +53,5 @@ function App() {
     </HelmetProvider>
   );
 }
-
-// Redirect component for old URLs
-const RedirectToNewPattern: React.FC = () => {
-  const { location } = useParams<{ location: string }>();
-  return <Navigate to={`/dog-walks/kent/${location}`} replace />;
-};
 
 export default App;
