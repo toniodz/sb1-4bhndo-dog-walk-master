@@ -2,7 +2,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { ToastProvider } from '@/providers/ToastProvider';
 
 // Layout Components
 import Header from './components/Header';
@@ -16,9 +15,6 @@ import CategoryPage from './pages/CategoryPage';
 import SearchPage from './pages/SearchPage';
 import SubmitWalk from './pages/SubmitWalk';
 import ThankYou from './pages/ThankYou';
-import CountyPage from './pages/CountyPage';
-import TownPage from './pages/TownPage';
-import NotFoundPage from './pages/NotFoundPage';
 
 // Redirect component for old URLs
 const RedirectToNewPattern: React.FC = () => {
@@ -29,73 +25,55 @@ const RedirectToNewPattern: React.FC = () => {
 function App() {
   return (
     <HelmetProvider>
-      <ToastProvider>
-        <Router>
-          <div className="flex flex-col min-h-screen bg-gray-50">
-            <Header />
-            
-            <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <ErrorBoundary>
-                <Routes>
-                  {/* Main Pages */}
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/search" element={<SearchPage />} />
-                  <Route path="/submit-walk" element={<SubmitWalk />} />
-                  <Route path="/thank-you" element={<ThankYou />} />
-                  
-                  {/* County and Town Routes */}
-                  <Route path="/counties" element={<CategoryPage type="counties" />} />
-                  <Route path="/:county" element={<CountyPage />} />
-                  <Route path="/:county/walks" element={<CountyPage />} />
-                  <Route path="/:county/:town/walks" element={<TownPage />} />
-                  <Route path="/walks/:slug" element={<BlogPost />} />
+      <Router>
+        <div className="flex flex-col min-h-screen bg-gray-50">
+          <Header />
+          
+          <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <ErrorBoundary>
+              <Routes>
+                {/* Main Pages */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/submit-walk" element={<SubmitWalk />} />
+                <Route path="/thank-you" element={<ThankYou />} />
+                
+                {/* County and Town Routes */}
+                <Route path="/counties" element={<CategoryPage />} />
+                <Route path="/:county/walks" element={<CategoryPage />} />
+                <Route path="/:county/:town/walks" element={<CategoryPage />} />
+                <Route path="/walks/:slug" element={<BlogPost />} />
 
-                  {/* Feature Routes */}
-                  <Route path="/:county/features/:feature" element={<CountyPage />} />
-                  <Route path="/:county/:town/features/:feature" element={<TownPage />} />
+                {/* Feature Routes */}
+                <Route path="/:county/features/:feature" element={<CategoryPage />} />
+                <Route path="/:county/:town/features/:feature" element={<CategoryPage />} />
 
-                  {/* Redirects from old URLs */}
-                  <Route 
-                    path="/dog-walks-in-kent" 
-                    element={<Navigate to="/kent/walks" replace />} 
-                  />
-                  <Route 
-                    path="/dog-walks-in-:location" 
-                    element={<RedirectToNewPattern />} 
-                  />
-                  
-                  {/* Legacy redirects */}
-                  <Route 
-                    path="/dog-walks/:county" 
-                    element={<Navigate to="/:county/walks" replace />} 
-                  />
-                  <Route 
-                    path="/dog-walks/:county/:town" 
-                    element={<Navigate to="/:county/:town/walks" replace />} 
-                  />
-                  <Route 
-                    path="/blog/:slug" 
-                    element={<Navigate to="/walks/:slug" replace />} 
-                  />
+                {/* Redirects */}
+                <Route 
+                  path="/dog-walks-in-kent" 
+                  element={<Navigate to="/kent/walks" replace />} 
+                />
+                <Route 
+                  path="/dog-walks-in-:location" 
+                  element={<RedirectToNewPattern />} 
+                />
+                <Route 
+                  path="/blog/:slug" 
+                  element={<Navigate to="/walks/:slug" replace />} 
+                />
 
-                  {/* Static Pages */}
-                  <Route path="/about" element={<div>About Page</div>} />
-                  <Route path="/contact" element={<div>Contact Page</div>} />
-                  <Route path="/privacy-policy" element={<div>Privacy Policy</div>} />
-                  <Route path="/terms" element={<div>Terms of Service</div>} />
+                {/* 404 */}
+                <Route path="*" element={<div>Page not found</div>} />
+              </Routes>
+            </ErrorBoundary>
+          </main>
 
-                  {/* 404 */}
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </ErrorBoundary>
-            </main>
-
-            <Footer />
-          </div>
-        </Router>
-      </ToastProvider>
+          <Footer />
+        </div>
+      </Router>
     </HelmetProvider>
   );
 }
 
 export default App;
+Last edited 1 minute ago
