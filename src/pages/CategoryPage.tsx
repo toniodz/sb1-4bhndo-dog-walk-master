@@ -7,66 +7,43 @@ import { Helmet } from 'react-helmet-async';
 
 interface Walk {
   id: number;
-  attributes: {
-    title: string;
-    slug: string;
-    rating: number;
-    town: {
-      data?: {
-        attributes?: {
-          name: string;
-          county?: {
-            data?: {
-              attributes?: {
-                name: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    duration: string;
-    difficulty: string;
-    overview: string;
-    image: {
-      data?: {
-        attributes?: {
-          formats?: {
-            medium?: {
-              url?: string;
-            };
-          };
-        };
-      };
-    };
-  };
+  documentId: string;
+  Title: string;
+  slug: string;
+  rating: number | null;
+  address: string;
+  duration: string;
+  difficulty: string;
+  overview?: string;
+  Town: string;
+  Region: string;
+  image?: {
+    url: string;
+  } | null;
 }
 
 const CategoryPage: React.FC = () => {
   const { county, town } = useParams<{ county?: string; town?: string }>();
   const [walks, setWalks] = useState<Walk[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadWalks = async () => {
       try {
         setLoading(true);
-        let filters = {};
-
-        // Only add filters if county/town are provided
-        if (county) {
-          if (town) {
-            filters = { town: town.toLowerCase() };
-          } else {
-            filters = { location: county.toLowerCase() };
-          }
-        }
-
+        setError(null);
+        
+        const filters = {
+          county: county?.toLowerCase(),
+          town: town?.toLowerCase()
+        };
+        
         const fetchedWalks = await fetchWalks(filters);
-        setWalks(Array.isArray(fetchedWalks) ? fetchedWalks : []);
-      } catch (error) {
-        console.error('Error loading walks:', error);
-        setWalks([]);
+        setWalks(fetchedWalks);
+      } catch (err) {
+        console.error('Error loading walks:', err);
+        setError('Failed to load walks. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -76,27 +53,22 @@ const CategoryPage: React.FC = () => {
   }, [county, town]);
 
   const getBreadcrumbItems = () => {
-    const items = [];
+    const items = [
+      { label: 'Dog Walks', path: '/dog-walks' }
+    ];
 
     if (county) {
-      const capitalizedCounty = county.charAt(0).toUpperCase() + county.slice(1).toLowerCase();
       items.push({
-        label: `Dog Walks in ${capitalizedCounty}`,
+        label: `Dog Walks in ${county.charAt(0).toUpperCase() + county.slice(1)}`,
         path: `/dog-walks/${county.toLowerCase()}`
       });
 
       if (town) {
-        const capitalizedTown = town.charAt(0).toUpperCase() + town.slice(1).toLowerCase();
         items.push({
-          label: `Dog Walks in ${capitalizedTown}`,
+          label: `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}`,
           path: `/dog-walks/${county.toLowerCase()}/${town.toLowerCase()}`
         });
       }
-    } else {
-      items.push({
-        label: 'Dog Walks',
-        path: '/dog-walks'
-      });
     }
 
     return items;
@@ -104,13 +76,10 @@ const CategoryPage: React.FC = () => {
 
   const getPageTitle = () => {
     if (town && county) {
-      const capitalizedTown = town.charAt(0).toUpperCase() + town.slice(1).toLowerCase();
-      const capitalizedCounty = county.charAt(0).toUpperCase() + county.slice(1).toLowerCase();
-      return `Dog Walks in ${capitalizedTown}, ${capitalizedCounty}`;
+      return `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}, ${county.charAt(0).toUpperCase() + county.slice(1)}`;
     }
     if (county) {
-      const capitalizedCounty = county.charAt(0).toUpperCase() + county.slice(1).toLowerCase();
-      return `Dog Walks in ${capitalizedCounty}`;
+      return `Dog Walks in ${county.charAt(0).toUpperCase() + county.slice(1)}`;
     }
     return 'Dog Walks';
   };
@@ -145,37 +114,41 @@ const CategoryPage: React.FC = () => {
 
         <h1 className="text-4xl font-bold text-gray-800 mb-8">{getPageTitle()}</h1>
         
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative mb-6">
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {walks.map((walk) => (
             <Link 
               key={walk.id}
-              to={`/walks/${walk.attributes.slug}`}
+              to={`/walks/${walk.slug}`}
               className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
             >
-              {walk.attributes.image?.data?.attributes?.formats?.medium?.url && (
+              {walk.image?.url && (
                 <img 
-                  src={walk.attributes.image.data.attributes.formats.medium.url}
-                  alt={`${walk.attributes.title} dog walking route`}
+                  src={walk.image.url}
+                  alt={`${walk.Title} dog walking route`}
                   className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy"
                 />
               )}
               <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">{walk.attributes.title}</h2>
+                <h2 className="text-xl font-semibold mb-2">{walk.Title}</h2>
                 <div className="flex items-center text-gray-600 mb-2">
                   <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm truncate">
-                    {walk.attributes.town?.data?.attributes?.name ?? 'Location unavailable'}
-                  </span>
+                  <span className="text-sm truncate">{walk.Town}, {walk.Region}</span>
                 </div>
                 <div className="flex items-center text-gray-600 mb-2">
                   <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm">{walk.attributes.duration}</span>
+                  <span className="text-sm">{walk.duration}</span>
                 </div>
-                {walk.attributes.rating && (
+                {walk.rating && (
                   <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
                     <Star className="h-4 w-4 mr-1" />
-                    {walk.attributes.rating.toFixed(1)}
+                    {walk.rating.toFixed(1)}
                   </div>
                 )}
               </div>
@@ -183,7 +156,7 @@ const CategoryPage: React.FC = () => {
           ))}
         </div>
 
-        {walks.length === 0 && (
+        {walks.length === 0 && !error && (
           <div className="text-center py-12">
             <p className="text-gray-600">No walks found in this area yet.</p>
           </div>
