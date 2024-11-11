@@ -4,7 +4,42 @@ import { MapPin, Clock, Star } from 'lucide-react';
 import { fetchWalks } from '../api/strapi';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
-import type { Walk } from '../api/strapi';  // Make sure to export the Walk interface from strapi.ts
+
+interface Walk {
+  id: number;
+  attributes: {
+    Title: string;
+    slug: string;
+    rating: number | null;
+    address: string;
+    duration: string;
+    difficulty: string;
+    overview?: string;
+    county: {
+      data: {
+        attributes: {
+          name: string;
+          slug: string;
+        }
+      } | null;
+    } | null;
+    town: {
+      data: {
+        attributes: {
+          name: string;
+          slug: string;
+        }
+      } | null;
+    } | null;
+    image: {
+      data?: {
+        attributes?: {
+          url?: string;
+        };
+      } | null;
+    };
+  };
+}
 
 const CategoryPage: React.FC = () => {
   const { county, town } = useParams<{ county?: string; town?: string }>();
@@ -24,7 +59,7 @@ const CategoryPage: React.FC = () => {
         };
         
         const fetchedWalks = await fetchWalks(filters);
-        setWalks(fetchedWalks);
+        setWalks(Array.isArray(fetchedWalks) ? fetchedWalks : []);
       } catch (err) {
         console.error('Error loading walks:', err);
         setError('Failed to load walks. Please try again later.');
@@ -80,7 +115,10 @@ const CategoryPage: React.FC = () => {
     <>
       <Helmet>
         <title>{getPageTitle()} | Dog Walks Near Me</title>
-        <meta name="description" content={`Discover dog-friendly walks in ${county}${town ? ` and ${town}` : ''}. Find the perfect walking route for you and your furry friend.`} />
+        <meta 
+          name="description" 
+          content={`Discover dog-friendly walks in ${county}${town ? ` and ${town}` : ''}. Find the perfect walking route for you and your furry friend.`} 
+        />
       </Helmet>
 
       <div className="max-w-7xl mx-auto">
@@ -95,42 +133,50 @@ const CategoryPage: React.FC = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {walks.map((walk) => (
-            <Link 
-              key={walk.id}
-              to={`/walks/${walk.attributes.slug}`}
-              className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
-            >
-              {walk.attributes.image?.data?.attributes?.url && (
-                <img 
-                  src={walk.attributes.image.data.attributes.url}
-                  alt={`${walk.attributes.Title} dog walking route`}
-                  className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
-              )}
-              <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">{walk.attributes.Title}</h2>
-                <div className="flex items-center text-gray-600 mb-2">
-                  <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm truncate">
-                    {walk.attributes.town?.data?.attributes?.name}, 
-                    {walk.attributes.county?.data?.attributes?.name}
-                  </span>
-                </div>
-                <div className="flex items-center text-gray-600 mb-2">
-                  <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm">{walk.attributes.duration}</span>
-                </div>
-                {walk.attributes.rating && (
-                  <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                    <Star className="h-4 w-4 mr-1" />
-                    {walk.attributes.rating.toFixed(1)}
-                  </div>
+          {walks.map((walk) => {
+            // Safely access nested properties
+            const townName = walk?.attributes?.town?.data?.attributes?.name;
+            const countyName = walk?.attributes?.county?.data?.attributes?.name;
+            const imageUrl = walk?.attributes?.image?.data?.attributes?.url;
+
+            return (
+              <Link 
+                key={walk.id}
+                to={`/walks/${walk.attributes.slug}`}
+                className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
+              >
+                {imageUrl && (
+                  <img 
+                    src={imageUrl}
+                    alt={`${walk.attributes.Title} dog walking route`}
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
                 )}
-              </div>
-            </Link>
-          ))}
+                <div className="p-4">
+                  <h2 className="text-xl font-semibold mb-2">{walk.attributes.Title}</h2>
+                  {(townName || countyName) && (
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="text-sm truncate">
+                        {[townName, countyName].filter(Boolean).join(', ')}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center text-gray-600 mb-2">
+                    <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="text-sm">{walk.attributes.duration}</span>
+                  </div>
+                  {walk.attributes.rating && (
+                    <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      <Star className="h-4 w-4 mr-1" />
+                      {walk.attributes.rating.toFixed(1)}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
         {walks.length === 0 && !error && (
