@@ -1,4 +1,3 @@
-// App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
@@ -76,4 +75,3 @@ function App() {
 }
 
 export default App;
-Last edited 1 minute ago
