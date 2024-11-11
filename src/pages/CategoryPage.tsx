@@ -12,12 +12,12 @@ interface Walk {
     slug: string;
     rating: number;
     town: {
-      data: {
-        attributes: {
+      data?: {
+        attributes?: {
           name: string;
-          county: {
-            data: {
-              attributes: {
+          county?: {
+            data?: {
+              attributes?: {
                 name: string;
               };
             };
@@ -29,11 +29,11 @@ interface Walk {
     difficulty: string;
     overview: string;
     image: {
-      data: {
-        attributes: {
-          formats: {
-            medium: {
-              url: string;
+      data?: {
+        attributes?: {
+          formats?: {
+            medium?: {
+              url?: string;
             };
           };
         };
@@ -53,23 +53,20 @@ const CategoryPage: React.FC = () => {
         setLoading(true);
         let filters = {};
 
+        // Only add filters if county/town are provided
         if (county) {
-          filters = {
-            'town.county.slug': county
-          };
-          
           if (town) {
-            filters = {
-              ...filters,
-              'town.slug': town
-            };
+            filters = { town: town.toLowerCase() };
+          } else {
+            filters = { location: county.toLowerCase() };
           }
         }
 
         const fetchedWalks = await fetchWalks(filters);
-        setWalks(fetchedWalks);
+        setWalks(Array.isArray(fetchedWalks) ? fetchedWalks : []);
       } catch (error) {
         console.error('Error loading walks:', error);
+        setWalks([]);
       } finally {
         setLoading(false);
       }
@@ -82,14 +79,16 @@ const CategoryPage: React.FC = () => {
     const items = [];
 
     if (county) {
+      const capitalizedCounty = county.charAt(0).toUpperCase() + county.slice(1).toLowerCase();
       items.push({
-        label: `Dog Walks in ${county.charAt(0).toUpperCase() + county.slice(1)}`,
+        label: `Dog Walks in ${capitalizedCounty}`,
         path: `/dog-walks/${county.toLowerCase()}`
       });
 
       if (town) {
+        const capitalizedTown = town.charAt(0).toUpperCase() + town.slice(1).toLowerCase();
         items.push({
-          label: `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}`,
+          label: `Dog Walks in ${capitalizedTown}`,
           path: `/dog-walks/${county.toLowerCase()}/${town.toLowerCase()}`
         });
       }
@@ -104,17 +103,20 @@ const CategoryPage: React.FC = () => {
   };
 
   const getPageTitle = () => {
-    if (town) {
-      return `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}, ${county?.charAt(0).toUpperCase() + county?.slice(1)}`;
+    if (town && county) {
+      const capitalizedTown = town.charAt(0).toUpperCase() + town.slice(1).toLowerCase();
+      const capitalizedCounty = county.charAt(0).toUpperCase() + county.slice(1).toLowerCase();
+      return `Dog Walks in ${capitalizedTown}, ${capitalizedCounty}`;
     }
     if (county) {
-      return `Dog Walks in ${county.charAt(0).toUpperCase() + county?.slice(1)}`;
+      const capitalizedCounty = county.charAt(0).toUpperCase() + county.slice(1).toLowerCase();
+      return `Dog Walks in ${capitalizedCounty}`;
     }
     return 'Dog Walks';
   };
 
   const getMetaDescription = () => {
-    if (town) {
+    if (town && county) {
       return `Discover the best dog walks in ${town}, ${county}. Find dog-friendly walking routes, parks, and trails perfect for your furry friend.`;
     }
     if (county) {
@@ -163,8 +165,7 @@ const CategoryPage: React.FC = () => {
                 <div className="flex items-center text-gray-600 mb-2">
                   <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
                   <span className="text-sm truncate">
-                    {walk.attributes.town?.data?.attributes?.name}, 
-                    {walk.attributes.town?.data?.attributes?.county?.data?.attributes?.name}
+                    {walk.attributes.town?.data?.attributes?.name ?? 'Location unavailable'}
                   </span>
                 </div>
                 <div className="flex items-center text-gray-600 mb-2">
