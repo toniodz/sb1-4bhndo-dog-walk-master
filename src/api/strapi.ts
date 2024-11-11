@@ -1,5 +1,3 @@
-// src/api/strapi.ts
-
 import axios from 'axios';
 
 // Define interfaces to match actual API response
@@ -13,8 +11,8 @@ interface Walk {
   duration: string;
   difficulty: string;
   overview?: string;
-  Town: string;
-  Region: string;
+  Town: string;  // Note: case matches your original
+  Region: string; // Note: case matches your original
   coordinates?: {
     lat: number;
     lng: number;
@@ -39,8 +37,8 @@ interface StrapiResponse {
 
 // Define the base URL based on environment
 const baseURL = import.meta.env.PROD 
-  ? 'https://api.dogwalksnearme.uk/api'
-  : `${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/api`;
+  ? 'https://api.dogwalksnearme.uk/api'  // Production API endpoint
+  : `${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/api`;  // Development API endpoint
 
 const strapiAPI = axios.create({
   baseURL,
@@ -60,7 +58,7 @@ console.log('Strapi Configuration:', {
   baseURL: baseURL
 });
 
-// Request interceptor
+// Single request interceptor
 strapiAPI.interceptors.request.use(
   (config) => {
     console.log('Outgoing Request:', {
@@ -74,7 +72,7 @@ strapiAPI.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// Single response interceptor
 strapiAPI.interceptors.response.use(
   (response) => {
     console.log('Successful Response:', {
@@ -105,6 +103,7 @@ export const fetchWalks = async (filters?: {
     let queryString = '/walks?populate=*';
     
     if (filters?.county) {
+      // Note the case sensitivity - matching your original data structure
       queryString += `&filters[Region][$eqi]=${filters.county}`;
       
       if (filters?.town) {
@@ -112,12 +111,16 @@ export const fetchWalks = async (filters?: {
       }
     }
 
-    console.log('Query string:', queryString);
+    console.log('Final query string:', queryString);
     
     const response = await strapiAPI.get<StrapiResponse>(queryString);
     
+    // Debug log the raw response
+    console.log('Raw API response:', response.data);
+    
     if (response.data?.data) {
       const walks = response.data.data;
+      console.log('Parsed walks:', walks);
       console.log(`Found ${walks.length} walks`);
       return walks;
     }
@@ -130,12 +133,14 @@ export const fetchWalks = async (filters?: {
 
 export const getRelatedWalks = async (currentWalk: Walk) => {
   try {
+    // Get walks from same town but exclude current walk
     const queryString = `/walks?populate=*&filters[Town][$eq]=${currentWalk.Town}&filters[id][$ne]=${currentWalk.id}&pagination[limit]=3`;
     
     const response = await strapiAPI.get<StrapiResponse>(queryString);
     
     if (response.data?.data) {
       const walks = response.data.data;
+      // If we don't have enough walks from the same town, we could add more based on difficulty
       if (walks.length < 3) {
         const difficultyQuery = `/walks?populate=*&filters[difficulty][$eq]=${currentWalk.difficulty}&filters[id][$ne]=${currentWalk.id}&filters[Town][$ne]=${currentWalk.Town}&pagination[limit]=${3 - walks.length}`;
         const difficultyResponse = await strapiAPI.get<StrapiResponse>(difficultyQuery);
@@ -162,7 +167,7 @@ export const fetchWalkBySlug = async (slug: string) => {
     if (!response.data?.data?.[0]) {
       throw new Error('Walk not found');
     }
-    
+
     return response.data.data[0];
   } catch (error) {
     console.error('Error in fetchWalkBySlug:', error);
