@@ -7,31 +7,31 @@ import { Helmet } from 'react-helmet-async';
 
 interface Walk {
   id: number;
-  attributes: {
-    Title: string;
-    slug: string;
-    rating: number | null;
-    address: string;
-    duration: string;
-    difficulty: string;
+  attributes?: {
+    Title?: string;
+    slug?: string;
+    rating?: number | null;
+    address?: string;
+    duration?: string;
+    difficulty?: string;
     overview?: string;
-    county: {
-      data: {
-        attributes: {
-          name: string;
-          slug: string;
+    county?: {
+      data?: {
+        attributes?: {
+          name?: string;
+          slug?: string;
         }
       } | null;
     } | null;
-    town: {
-      data: {
-        attributes: {
-          name: string;
-          slug: string;
+    town?: {
+      data?: {
+        attributes?: {
+          name?: string;
+          slug?: string;
         }
       } | null;
     } | null;
-    image: {
+    image?: {
       data?: {
         attributes?: {
           url?: string;
@@ -134,6 +134,11 @@ const CategoryPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {walks.map((walk) => {
+            // Skip rendering if required properties are missing
+            if (!walk?.attributes?.slug || !walk?.attributes?.Title) {
+              return null;
+            }
+
             // Safely access nested properties
             const townName = walk?.attributes?.town?.data?.attributes?.name;
             const countyName = walk?.attributes?.county?.data?.attributes?.name;
@@ -163,10 +168,12 @@ const CategoryPage: React.FC = () => {
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="text-sm">{walk.attributes.duration}</span>
-                  </div>
+                  {walk.attributes.duration && (
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="text-sm">{walk.attributes.duration}</span>
+                    </div>
+                  )}
                   {walk.attributes.rating && (
                     <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
                       <Star className="h-4 w-4 mr-1" />
@@ -176,7 +183,7 @@ const CategoryPage: React.FC = () => {
                 </div>
               </Link>
             );
-          })}
+          }).filter(Boolean)}
         </div>
 
         {walks.length === 0 && !error && (
