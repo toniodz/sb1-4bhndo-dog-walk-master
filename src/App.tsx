@@ -18,7 +18,7 @@ import ThankYou from './pages/ThankYou';
 // Redirect component for old URLs
 const RedirectToNewPattern: React.FC = () => {
   const { location } = useParams<{ location: string }>();
-  return <Navigate to={`/kent/${location.toLowerCase()}/walks`} replace />;
+  return <Navigate to={`/dog-walks/kent/${location.toLowerCase()}`} replace />;
 };
 
 function App() {
@@ -37,20 +37,22 @@ function App() {
                 <Route path="/submit-walk" element={<SubmitWalk />} />
                 <Route path="/thank-you" element={<ThankYou />} />
                 
-                {/* County and Town Routes */}
-                <Route path="/counties" element={<CategoryPage />} />
-                <Route path="/:county/walks" element={<CategoryPage />} />
-                <Route path="/:county/:town/walks" element={<CategoryPage />} />
+                {/* Dog Walks Routes - Matching Original URLs */}
+                <Route path="/dog-walks" element={<CategoryPage />} />
+                <Route path="/dog-walks/:county" element={<CategoryPage />} />
+                <Route path="/dog-walks/:county/:town" element={<CategoryPage />} />
+                
+                {/* Individual Walk Route */}
                 <Route path="/walks/:slug" element={<BlogPost />} />
 
                 {/* Feature Routes */}
-                <Route path="/:county/features/:feature" element={<CategoryPage />} />
-                <Route path="/:county/:town/features/:feature" element={<CategoryPage />} />
+                <Route path="/dog-walks/:county/features/:feature" element={<CategoryPage />} />
+                <Route path="/dog-walks/:county/:town/features/:feature" element={<CategoryPage />} />
 
-                {/* Redirects */}
+                {/* Legacy Redirects */}
                 <Route 
                   path="/dog-walks-in-kent" 
-                  element={<Navigate to="/kent/walks" replace />} 
+                  element={<Navigate to="/dog-walks/kent" replace />} 
                 />
                 <Route 
                   path="/dog-walks-in-:location" 
