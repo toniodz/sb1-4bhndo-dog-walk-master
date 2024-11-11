@@ -4,23 +4,7 @@ import { MapPin, Clock, Star } from 'lucide-react';
 import { fetchWalks } from '../api/strapi';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
-
-interface Walk {
-  id: number;
-  documentId: string;
-  Title: string;
-  slug: string;
-  rating: number | null;
-  address: string;
-  duration: string;
-  difficulty: string;
-  overview?: string;
-  Town: string;
-  Region: string;
-  image?: {
-    url: string;
-  } | null;
-}
+import type { Walk } from '../api/strapi';  // Make sure to export the Walk interface from strapi.ts
 
 const CategoryPage: React.FC = () => {
   const { county, town } = useParams<{ county?: string; town?: string }>();
@@ -84,16 +68,6 @@ const CategoryPage: React.FC = () => {
     return 'Dog Walks';
   };
 
-  const getMetaDescription = () => {
-    if (town && county) {
-      return `Discover the best dog walks in ${town}, ${county}. Find dog-friendly walking routes, parks, and trails perfect for your furry friend.`;
-    }
-    if (county) {
-      return `Discover the best dog walks in ${county}. Find dog-friendly walking routes, parks, and trails perfect for your furry friend.`;
-    }
-    return 'Discover dog-friendly walks near you. Find the best walking routes, parks, and trails for you and your dog.';
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -106,7 +80,7 @@ const CategoryPage: React.FC = () => {
     <>
       <Helmet>
         <title>{getPageTitle()} | Dog Walks Near Me</title>
-        <meta name="description" content={getMetaDescription()} />
+        <meta name="description" content={`Discover dog-friendly walks in ${county}${town ? ` and ${town}` : ''}. Find the perfect walking route for you and your furry friend.`} />
       </Helmet>
 
       <div className="max-w-7xl mx-auto">
@@ -124,31 +98,34 @@ const CategoryPage: React.FC = () => {
           {walks.map((walk) => (
             <Link 
               key={walk.id}
-              to={`/walks/${walk.slug}`}
+              to={`/walks/${walk.attributes.slug}`}
               className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
             >
-              {walk.image?.url && (
+              {walk.attributes.image?.data?.attributes?.url && (
                 <img 
-                  src={walk.image.url}
-                  alt={`${walk.Title} dog walking route`}
+                  src={walk.attributes.image.data.attributes.url}
+                  alt={`${walk.attributes.Title} dog walking route`}
                   className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy"
                 />
               )}
               <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">{walk.Title}</h2>
+                <h2 className="text-xl font-semibold mb-2">{walk.attributes.Title}</h2>
                 <div className="flex items-center text-gray-600 mb-2">
                   <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm truncate">{walk.Town}, {walk.Region}</span>
+                  <span className="text-sm truncate">
+                    {walk.attributes.town?.data?.attributes?.name}, 
+                    {walk.attributes.county?.data?.attributes?.name}
+                  </span>
                 </div>
                 <div className="flex items-center text-gray-600 mb-2">
                   <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm">{walk.duration}</span>
+                  <span className="text-sm">{walk.attributes.duration}</span>
                 </div>
-                {walk.rating && (
+                {walk.attributes.rating && (
                   <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
                     <Star className="h-4 w-4 mr-1" />
-                    {walk.rating.toFixed(1)}
+                    {walk.attributes.rating.toFixed(1)}
                   </div>
                 )}
               </div>

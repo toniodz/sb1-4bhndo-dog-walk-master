@@ -3,24 +3,43 @@ import axios from 'axios';
 // Define interfaces to match actual API response
 interface Walk {
   id: number;
-  documentId: string;
-  Title: string;
-  slug: string;
-  rating: number | null;
-  address: string;
-  duration: string;
-  difficulty: string;
-  overview?: string;
-  Town: string;  // Note: case matches your original
-  Region: string; // Note: case matches your original
-  coordinates?: {
-    lat: number;
-    lng: number;
+  attributes: {
+    Title: string;
+    slug: string;
+    rating: number | null;
+    address: string;
+    duration: string;
+    difficulty: string;
+    overview?: string;
+    county: {
+      data: {
+        attributes: {
+          name: string;
+          slug: string;
+        }
+      }
+    };
+    town: {
+      data: {
+        attributes: {
+          name: string;
+          slug: string;
+        }
+      }
+    };
+    image: {
+      data?: {
+        attributes: {
+          formats?: {
+            medium?: {
+              url?: string;
+            };
+          };
+          url?: string;
+        };
+      };
+    };
   };
-  website?: string;
-  image?: {
-    url: string;
-  } | null;
 }
 
 interface StrapiResponse {
@@ -37,8 +56,8 @@ interface StrapiResponse {
 
 // Define the base URL based on environment
 const baseURL = import.meta.env.PROD 
-  ? 'https://api.dogwalksnearme.uk/api'  // Production API endpoint
-  : `${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/api`;  // Development API endpoint
+  ? 'https://api.dogwalksnearme.uk/api'
+  : `${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/api`;
 
 const strapiAPI = axios.create({
   baseURL,
@@ -49,16 +68,7 @@ const strapiAPI = axios.create({
   timeout: 10000 
 });
 
-// Single debug log for token
-console.log('Strapi Configuration:', {
-  hasViteToken: !!import.meta.env.VITE_STRAPI_API_TOKEN,
-  tokenPreview: import.meta.env.VITE_STRAPI_API_TOKEN ? 
-    `Bearer ${import.meta.env.VITE_STRAPI_API_TOKEN.substring(0, 5)}...` : 
-    'No token found',
-  baseURL: baseURL
-});
-
-// Single request interceptor
+// Request interceptor
 strapiAPI.interceptors.request.use(
   (config) => {
     console.log('Outgoing Request:', {
@@ -72,7 +82,7 @@ strapiAPI.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Single response interceptor
+// Response interceptor
 strapiAPI.interceptors.response.use(
   (response) => {
     console.log('Successful Response:', {
@@ -100,14 +110,16 @@ export const fetchWalks = async (filters?: {
   try {
     console.log('Fetching walks with filters:', filters);
     
-    let queryString = '/walks?populate=*';
+    // Start with base query that includes county and town relations
+    let queryString = '/walks?populate[0]=county&populate[1]=town&populate[2]=image';
     
     if (filters?.county) {
-      // Note the case sensitivity - matching your original data structure
-      queryString += `&filters[Region][$eqi]=${filters.county}`;
+      // Filter by county slug
+      queryString += `&filters[county][slug][$eqi]=${filters.county}`;
       
       if (filters?.town) {
-        queryString += `&filters[Town][$eqi]=${filters.town}`;
+        // Add town filter if provided
+        queryString += `&filters[town][slug][$eqi]=${filters.town}`;
       }
     }
 
@@ -133,16 +145,15 @@ export const fetchWalks = async (filters?: {
 
 export const getRelatedWalks = async (currentWalk: Walk) => {
   try {
-    // Get walks from same town but exclude current walk
-    const queryString = `/walks?populate=*&filters[Town][$eq]=${currentWalk.Town}&filters[id][$ne]=${currentWalk.id}&pagination[limit]=3`;
+    const townSlug = currentWalk.attributes.town?.data?.attributes?.slug;
+    const queryString = `/walks?populate=*&filters[town][slug][$eq]=${townSlug}&filters[id][$ne]=${currentWalk.id}&pagination[limit]=3`;
     
     const response = await strapiAPI.get<StrapiResponse>(queryString);
     
     if (response.data?.data) {
       const walks = response.data.data;
-      // If we don't have enough walks from the same town, we could add more based on difficulty
       if (walks.length < 3) {
-        const difficultyQuery = `/walks?populate=*&filters[difficulty][$eq]=${currentWalk.difficulty}&filters[id][$ne]=${currentWalk.id}&filters[Town][$ne]=${currentWalk.Town}&pagination[limit]=${3 - walks.length}`;
+        const difficultyQuery = `/walks?populate=*&filters[difficulty][$eq]=${currentWalk.attributes.difficulty}&filters[id][$ne]=${currentWalk.id}&filters[town][slug][$ne]=${townSlug}&pagination[limit]=${3 - walks.length}`;
         const difficultyResponse = await strapiAPI.get<StrapiResponse>(difficultyQuery);
         if (difficultyResponse.data?.data) {
           walks.push(...difficultyResponse.data.data);
