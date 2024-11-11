@@ -7,24 +7,43 @@ import { Helmet } from 'react-helmet-async';
 
 interface Walk {
   id: number;
-  Title: string;
-  slug: string;
-  rating: number;
-  Town: string;
-  duration: string;
-  difficulty: string;
-  overview: string;
-  image: Array<{
-    formats: {
-      medium: {
-        url: string;
+  attributes: {
+    title: string;
+    slug: string;
+    rating: number;
+    town: {
+      data: {
+        attributes: {
+          name: string;
+          county: {
+            data: {
+              attributes: {
+                name: string;
+              };
+            };
+          };
+        };
       };
     };
-  }>;
+    duration: string;
+    difficulty: string;
+    overview: string;
+    image: {
+      data: {
+        attributes: {
+          formats: {
+            medium: {
+              url: string;
+            };
+          };
+        };
+      };
+    };
+  };
 }
 
 const CategoryPage: React.FC = () => {
-  const { location } = useParams<{ location?: string }>();
+  const { county, town } = useParams<{ county?: string; town?: string }>();
   const [walks, setWalks] = useState<Walk[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,8 +53,17 @@ const CategoryPage: React.FC = () => {
         setLoading(true);
         let filters = {};
 
-        if (location && location.toLowerCase() !== 'kent') {
-          filters = { town: location.toLowerCase() };
+        if (county) {
+          filters = {
+            'town.county.slug': county
+          };
+          
+          if (town) {
+            filters = {
+              ...filters,
+              'town.slug': town
+            };
+          }
         }
 
         const fetchedWalks = await fetchWalks(filters);
@@ -48,73 +76,51 @@ const CategoryPage: React.FC = () => {
     };
 
     loadWalks();
-  }, [location]);
-
-  const getPageTitle = () => {
-    if (!location) return 'Dog Walks in Kent';
-    return `Dog Walks in ${location.charAt(0).toUpperCase() + location.slice(1)}`;
-  };
+  }, [county, town]);
 
   const getBreadcrumbItems = () => {
-    if (!location || location.toLowerCase() === 'kent') {
-      return [
-        { label: 'Dog Walks in Kent', path: '/dog-walks-in-kent' }
-      ];
+    const items = [];
+
+    if (county) {
+      items.push({
+        label: `Dog Walks in ${county.charAt(0).toUpperCase() + county.slice(1)}`,
+        path: `/dog-walks/${county.toLowerCase()}`
+      });
+
+      if (town) {
+        items.push({
+          label: `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}`,
+          path: `/dog-walks/${county.toLowerCase()}/${town.toLowerCase()}`
+        });
+      }
+    } else {
+      items.push({
+        label: 'Dog Walks',
+        path: '/dog-walks'
+      });
     }
 
-    return [
-      { label: 'Dog Walks in Kent', path: '/dog-walks-in-kent' },
-      { 
-        label: `Dog Walks in ${location.charAt(0).toUpperCase() + location.slice(1)}`, 
-        path: `/dog-walks-in-${location.toLowerCase()}` 
-      }
-    ];
+    return items;
+  };
+
+  const getPageTitle = () => {
+    if (town) {
+      return `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}, ${county?.charAt(0).toUpperCase() + county?.slice(1)}`;
+    }
+    if (county) {
+      return `Dog Walks in ${county.charAt(0).toUpperCase() + county?.slice(1)}`;
+    }
+    return 'Dog Walks';
   };
 
   const getMetaDescription = () => {
-    if (!location || location.toLowerCase() === 'kent') {
-      return 'Discover the best dog walks in Kent. Find dog-friendly walking routes, parks, and trails perfect for your furry friend.';
+    if (town) {
+      return `Discover the best dog walks in ${town}, ${county}. Find dog-friendly walking routes, parks, and trails perfect for your furry friend.`;
     }
-    return `Explore dog-friendly walks in ${location}. Find the best walking routes, parks, and trails for you and your dog.`;
-  };
-
-  const getSchemaMarkup = () => {
-    return {
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      "name": getPageTitle(),
-      "description": getMetaDescription(),
-      "breadcrumb": {
-        "@type": "BreadcrumbList",
-        "itemListElement": getBreadcrumbItems().map((item, index) => ({
-          "@type": "ListItem",
-          "position": index + 1,
-          "item": {
-            "@id": `https://dogwalksnearme.uk${item.path}`,
-            "name": item.label
-          }
-        }))
-      },
-      "mainEntity": {
-        "@type": "ItemList",
-        "itemListElement": walks.map((walk, index) => ({
-          "@type": "ListItem",
-          "position": index + 1,
-          "item": {
-            "@type": "Place",
-            "name": walk.Title,
-            "description": walk.overview,
-            "image": walk.image?.[0]?.formats?.medium?.url,
-            "address": {
-              "@type": "PostalAddress",
-              "addressLocality": walk.Town,
-              "addressRegion": "Kent",
-              "addressCountry": "UK"
-            }
-          }
-        }))
-      }
-    };
+    if (county) {
+      return `Discover the best dog walks in ${county}. Find dog-friendly walking routes, parks, and trails perfect for your furry friend.`;
+    }
+    return 'Discover dog-friendly walks near you. Find the best walking routes, parks, and trails for you and your dog.';
   };
 
   if (loading) {
@@ -130,16 +136,6 @@ const CategoryPage: React.FC = () => {
       <Helmet>
         <title>{getPageTitle()} | Dog Walks Near Me</title>
         <meta name="description" content={getMetaDescription()} />
-        <meta property="og:title" content={getPageTitle()} />
-        <meta property="og:description" content={getMetaDescription()} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://dogwalksnearme.uk${location ? `/dog-walks-in-${location.toLowerCase()}` : '/dog-walks-in-kent'}`} />
-        {walks[0]?.image?.[0]?.formats?.medium?.url && (
-          <meta property="og:image" content={walks[0].image[0].formats.medium.url} />
-        )}
-        <script type="application/ld+json">
-          {JSON.stringify(getSchemaMarkup())}
-        </script>
       </Helmet>
 
       <div className="max-w-7xl mx-auto">
@@ -151,31 +147,34 @@ const CategoryPage: React.FC = () => {
           {walks.map((walk) => (
             <Link 
               key={walk.id}
-              to={`/walks/${walk.slug}`}
+              to={`/walks/${walk.attributes.slug}`}
               className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
             >
-              {walk.image?.[0]?.formats?.medium?.url && (
+              {walk.attributes.image?.data?.attributes?.formats?.medium?.url && (
                 <img 
-                  src={walk.image[0].formats.medium.url}
-                  alt={`${walk.Title} dog walking route`}
+                  src={walk.attributes.image.data.attributes.formats.medium.url}
+                  alt={`${walk.attributes.title} dog walking route`}
                   className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy"
                 />
               )}
               <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">{walk.Title}</h2>
+                <h2 className="text-xl font-semibold mb-2">{walk.attributes.title}</h2>
                 <div className="flex items-center text-gray-600 mb-2">
                   <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm truncate">{walk.Town}</span>
+                  <span className="text-sm truncate">
+                    {walk.attributes.town?.data?.attributes?.name}, 
+                    {walk.attributes.town?.data?.attributes?.county?.data?.attributes?.name}
+                  </span>
                 </div>
                 <div className="flex items-center text-gray-600 mb-2">
                   <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm">{walk.duration}</span>
+                  <span className="text-sm">{walk.attributes.duration}</span>
                 </div>
-                {walk.rating && (
+                {walk.attributes.rating && (
                   <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
                     <Star className="h-4 w-4 mr-1" />
-                    {walk.rating.toFixed(1)}
+                    {walk.attributes.rating.toFixed(1)}
                   </div>
                 )}
               </div>
