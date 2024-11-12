@@ -1,29 +1,6 @@
 import axios from 'axios';
 
-// Types for Strapi responses
-interface StrapiAttribute {
-  data?: {
-    id?: number;
-    attributes?: {
-      name?: string;
-      slug?: string;
-    };
-  } | null;
-}
-
-interface StrapiImage {
-  data?: {
-    attributes?: {
-      url?: string;
-      formats?: {
-        medium?: {
-          url?: string;
-        };
-      };
-    };
-  } | null;
-}
-
+// Define interfaces to match actual API response
 interface Walk {
   id: number;
   attributes?: {
@@ -34,12 +11,20 @@ interface Walk {
     duration?: string;
     difficulty?: string;
     overview?: string;
-    county?: StrapiAttribute;
-    town?: StrapiAttribute;
-    image?: StrapiImage;
-    createdAt?: string;
-    updatedAt?: string;
-    publishedAt?: string;
+    Town?: string;
+    Region?: string;
+    image?: {
+      data?: {
+        attributes?: {
+          url?: string;
+          formats?: {
+            medium?: {
+              url?: string;
+            };
+          };
+        };
+      };
+    };
   };
 }
 
@@ -53,6 +38,11 @@ interface StrapiResponse {
       total: number;
     };
   };
+}
+
+interface Locations {
+  counties: string[];
+  towns: string[];
 }
 
 // Define the base URL based on environment
@@ -105,81 +95,13 @@ strapiAPI.interceptors.response.use(
   }
 );
 
-// Main fetch function for walks
-export const fetchWalks = async (filters?: {
-  county?: string;
-  town?: string;
-}) => {
-  try {
-    console.group('Fetching Walks');
-    console.log('Filters:', filters);
-
-    // Start with base query
-    let queryString = '/walks?populate=*';
-    
-    // Add filters if provided
-    if (filters?.county) {
-      queryString += `&filters[county][slug]=${filters.county}`;
-      
-      if (filters?.town) {
-        queryString += `&filters[town][slug]=${filters.town}`;
-      }
-    }
-
-    console.log('Query:', queryString);
-    
-    const response = await strapiAPI.get<StrapiResponse>(queryString);
-    
-    if (response.data?.data) {
-      const walks = response.data.data;
-      console.log(`Found ${walks.length} walks`);
-      console.groupEnd();
-      return walks;
-    }
-
-    console.log('No walks found');
-    console.groupEnd();
-    return [];
-  } catch (error) {
-    console.error('Error fetching walks:', error);
-    console.groupEnd();
-    return [];
-  }
-};
-
-// Fetch single walk by slug
-export const fetchWalkBySlug = async (slug: string) => {
-  try {
-    console.group('Fetching Walk by Slug');
-    console.log('Slug:', slug);
-
-    const response = await strapiAPI.get<StrapiResponse>(
-      `/walks?filters[slug]=${slug}&populate=*`
-    );
-
-    if (!response.data?.data?.[0]) {
-      throw new Error('Walk not found');
-    }
-
-    console.log('Found walk:', response.data.data[0].attributes?.Title);
-    console.groupEnd();
-    return response.data.data[0];
-  } catch (error) {
-    console.error('Error fetching walk:', error);
-    console.groupEnd();
-    throw error;
-  }
-};
-
-// In strapi.ts - Add these new fetch functions
-
-export const fetchLocations = async () => {
+// Fetch locations (counties and towns)
+export const fetchLocations = async (): Promise<Locations> => {
   try {
     const response = await strapiAPI.get<StrapiResponse>('/walks?populate=*');
     
     if (response.data?.data) {
-      // Extract unique counties and towns from walks
-      const locations = response.data.data.reduce((acc, walk) => {
+      const locations = response.data.data.reduce((acc: Locations, walk: Walk) => {
         const region = walk.attributes?.Region;
         const town = walk.attributes?.Town;
         
@@ -204,6 +126,7 @@ export const fetchLocations = async () => {
   }
 };
 
+// Main fetch function for walks
 export const fetchWalks = async (filters?: {
   county?: string;
   town?: string;
@@ -215,7 +138,7 @@ export const fetchWalks = async (filters?: {
     // Start with base query
     let queryString = '/walks?populate=*';
     
-    // Add filters based on attributes
+    // Add filters based on Region and Town fields
     if (filters?.county) {
       queryString += `&filters[Region][$eqi]=${filters.county}`;
       
@@ -235,30 +158,36 @@ export const fetchWalks = async (filters?: {
     }
 
     console.log('No walks found');
+    console.groupEnd();
     return [];
   } catch (error) {
     console.error('Error fetching walks:', error);
+    console.groupEnd();
     return [];
   }
 };
 
-// Fetch related walks
-export const getRelatedWalks = async (currentWalk: Walk) => {
+// Fetch single walk by slug
+export const fetchWalkBySlug = async (slug: string): Promise<Walk | null> => {
   try {
-    const townSlug = currentWalk.attributes?.town?.data?.attributes?.slug;
-    if (!townSlug) return [];
+    console.group('Fetching Walk by Slug');
+    console.log('Slug:', slug);
 
     const response = await strapiAPI.get<StrapiResponse>(
-      `/walks?filters[town][slug]=${townSlug}&filters[id][$ne]=${currentWalk.id}&populate=*&pagination[limit]=3`
+      `/walks?filters[slug][$eq]=${slug}&populate=*`
     );
-    
-    if (response.data?.data) {
-      return response.data.data;
+
+    if (!response.data?.data?.[0]) {
+      throw new Error('Walk not found');
     }
-    return [];
+
+    console.log('Found walk:', response.data.data[0].attributes?.Title);
+    console.groupEnd();
+    return response.data.data[0];
   } catch (error) {
-    console.error('Error fetching related walks:', error);
-    return [];
+    console.error('Error fetching walk:', error);
+    console.groupEnd();
+    return null;
   }
 };
 
