@@ -1,72 +1,42 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { MapPin, Clock, Star } from 'lucide-react';
-import { fetchWalks, fetchLocations } from '../api/strapi';
+import { fetchWalks, fetchCounties, fetchTowns } from '../api/strapi';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
 
-interface Walk {
-  id: number;
-  attributes?: {
-    Title?: string;
-    slug?: string;
-    rating?: number | null;
-    address?: string;
-    duration?: string;
-    difficulty?: string;
-    overview?: string;
-    Town?: string;
-    Region?: string;
-    image?: {
-      data?: {
-        attributes?: {
-          url?: string;
-        };
-      };
-    };
-  };
-}
-
-interface Locations {
-  counties: string[];
-  towns: string[];
-}
-
 const CategoryPage: React.FC = () => {
   const { county, town } = useParams<{ county?: string; town?: string }>();
-  const navigate = useNavigate();
-  const [walks, setWalks] = useState<Walk[]>([]);
-  const [locations, setLocations] = useState<Locations>({ counties: [], towns: [] });
+  const [walks, setWalks] = useState<any[]>([]);
+  const [counties, setCounties] = useState<any[]>([]);
+  const [towns, setTowns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load locations and validate current route
   useEffect(() => {
-    const validateRoute = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
-        const locationData = await fetchLocations();
-        setLocations(locationData);
-
-        // Validate if current county/town exists in our data
-        if (county && !locationData.counties.map(c => c.toLowerCase()).includes(county.toLowerCase())) {
-          navigate('/dog-walks', { replace: true });
-          return;
+        
+        if (!county) {
+          // On main page, load counties
+          const countiesData = await fetchCounties();
+          setCounties(countiesData);
+        } else {
+          // Load walks filtered by county/town
+          const filters = {
+            county: county.toLowerCase(),
+            ...(town && { town: town.toLowerCase() })
+          };
+          
+          const [walksData, townsData] = await Promise.all([
+            fetchWalks(filters),
+            fetchTowns(county)
+          ]);
+          
+          setWalks(walksData);
+          setTowns(townsData);
         }
-
-        if (town && !locationData.towns.map(t => t.toLowerCase()).includes(town.toLowerCase())) {
-          navigate(`/dog-walks/${county}`, { replace: true });
-          return;
-        }
-
-        // Load walks after location validation
-        const filters = {
-          ...(county ? { county: county.toLowerCase() } : {}),
-          ...(town ? { town: town.toLowerCase() } : {})
-        };
-
-        const fetchedWalks = await fetchWalks(filters);
-        setWalks(fetchedWalks);
       } catch (err) {
         console.error('Error loading data:', err);
         setError('Failed to load content. Please try again later.');
@@ -75,40 +45,8 @@ const CategoryPage: React.FC = () => {
       }
     };
 
-    validateRoute();
-  }, [county, town, navigate]);
-
-  const getBreadcrumbItems = () => {
-    const items = [
-      { label: 'Dog Walks', path: '/dog-walks' }
-    ];
-
-    if (county) {
-      items.push({
-        label: `Dog Walks in ${county.charAt(0).toUpperCase() + county.slice(1)}`,
-        path: `/dog-walks/${county.toLowerCase()}`
-      });
-
-      if (town) {
-        items.push({
-          label: `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}`,
-          path: `/dog-walks/${county.toLowerCase()}/${town.toLowerCase()}`
-        });
-      }
-    }
-
-    return items;
-  };
-
-  const getPageTitle = () => {
-    if (town && county) {
-      return `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}, ${county.charAt(0).toUpperCase() + county.slice(1)}`;
-    }
-    if (county) {
-      return `Dog Walks in ${county.charAt(0).toUpperCase() + county.slice(1)}`;
-    }
-    return 'Dog Walks';
-  };
+    loadData();
+  }, [county, town]);
 
   if (loading) {
     return (
@@ -118,33 +56,30 @@ const CategoryPage: React.FC = () => {
     );
   }
 
-  // Show available locations on the main dog walks page
-  if (!county && !town) {
+  // Show counties list on main page
+  if (!county) {
     return (
       <div className="max-w-7xl mx-auto">
         <Helmet>
-          <title>Dog Walks Near Me | Find Local Dog Walking Routes</title>
+          <title>Dog Walks by County | Dog Walks Near Me</title>
           <meta 
             name="description" 
-            content="Discover dog-friendly walks across the UK. Find the perfect walking route for you and your furry friend in your local area." 
+            content="Discover dog-friendly walks across different counties. Find the perfect walking route for you and your furry friend." 
           />
         </Helmet>
 
-        <Breadcrumbs items={getBreadcrumbItems()} />
-
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">Dog Walks by Location</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-8">Dog Walks by County</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {locations.counties.map((countyName) => (
+          {counties.map((county) => (
             <Link
-              key={countyName}
-              to={`/dog-walks/${countyName.toLowerCase()}`}
+              key={county.id}
+              to={`/dog-walks/${county.attributes.slug}`}
               className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
             >
-              <h2 className="text-xl font-semibold">Dog Walks in {countyName}</h2>
-              <p className="text-gray-600 mt-2">
-                Discover dog-friendly walks in {countyName}
-              </p>
+              <h2 className="text-xl font-semibold">
+                Dog Walks in {county.attributes.name}
+              </h2>
             </Link>
           ))}
         </div>
@@ -152,83 +87,56 @@ const CategoryPage: React.FC = () => {
     );
   }
 
+  // Show walks for county/town
   return (
-    <>
+    <div className="max-w-7xl mx-auto">
       <Helmet>
-        <title>{getPageTitle()} | Dog Walks Near Me</title>
-        <meta 
-          name="description" 
-          content={`Discover dog-friendly walks in ${county}${town ? ` and ${town}` : ''}. Find the perfect walking route for you and your furry friend.`} 
-        />
+        <title>
+          Dog Walks in {town || county} | Dog Walks Near Me
+        </title>
       </Helmet>
 
-      <div className="max-w-7xl mx-auto">
-        <Breadcrumbs items={getBreadcrumbItems()} />
+      <h1 className="text-4xl font-bold text-gray-800 mb-8">
+        Dog Walks in {town || county}
+      </h1>
 
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">{getPageTitle()}</h1>
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative mb-6">
-            {error}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {walks.map((walk) => {
-            if (!walk?.attributes?.slug || !walk?.attributes?.Title) {
-              return null;
-            }
-
-            return (
-              <Link 
-                key={walk.id}
-                to={`/walks/${walk.attributes.slug}`}
-                className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
-              >
-                {walk.attributes.image?.data?.attributes?.url && (
-                  <img 
-                    src={walk.attributes.image.data.attributes.url}
-                    alt={`${walk.attributes.Title} dog walking route`}
-                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                )}
-                <div className="p-4">
-                  <h2 className="text-xl font-semibold mb-2">{walk.attributes.Title}</h2>
-                  {walk.attributes.Town && (
-                    <div className="flex items-center text-gray-600 mb-2">
-                      <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                      <span className="text-sm truncate">
-                        {walk.attributes.Town}
-                        {walk.attributes.Region && `, ${walk.attributes.Region}`}
-                      </span>
-                    </div>
-                  )}
-                  {walk.attributes.duration && (
-                    <div className="flex items-center text-gray-600 mb-2">
-                      <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-                      <span className="text-sm">{walk.attributes.duration}</span>
-                    </div>
-                  )}
-                  {walk.attributes.rating && (
-                    <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                      <Star className="h-4 w-4 mr-1" />
-                      {walk.attributes.rating.toFixed(1)}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            );
-          }).filter(Boolean)}
-        </div>
-
-        {walks.length === 0 && !error && (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No walks found in this area yet.</p>
-          </div>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {walks.map((walk) => (
+          <Link 
+            key={walk.id}
+            to={`/walks/${walk.attributes.slug}`}
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all"
+          >
+            {walk.attributes.image?.data?.attributes?.url && (
+              <img 
+                src={walk.attributes.image.data.attributes.url}
+                alt={walk.attributes.Title}
+                className="w-full h-48 object-cover"
+              />
+            )}
+            <div className="p-4">
+              <h2 className="text-xl font-semibold mb-2">
+                {walk.attributes.Title}
+              </h2>
+              <div className="flex items-center text-gray-600 mb-2">
+                <MapPin className="h-4 w-4 mr-2" />
+                <span>{walk.attributes.address}</span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <Clock className="h-4 w-4 mr-2" />
+                <span>{walk.attributes.duration}</span>
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
-    </>
+
+      {walks.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-600">No walks found in this area yet.</p>
+        </div>
+      )}
+    </div>
   );
 };
 
