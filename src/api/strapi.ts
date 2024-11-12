@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Types for Strapi v5 responses
+// Types for Strapi responses
 interface StrapiAttribute {
   data?: {
     id?: number;
@@ -114,63 +114,24 @@ export const fetchWalks = async (filters?: {
     console.group('Fetching Walks');
     console.log('Filters:', filters);
 
-    // Build query string for Strapi v5
-    const queryParams = {
-      populate: {
-        image: true,
-        county: {
-          fields: ['name', 'slug']
-        },
-        town: {
-          fields: ['name', 'slug']
-        }
-      },
-      filters: {}
-    };
-
+    // Start with base query
+    let queryString = '/walks?populate=*';
+    
+    // Add filters if provided
     if (filters?.county) {
-      queryParams.filters = {
-        ...queryParams.filters,
-        county: {
-          slug: {
-            $eq: filters.county.toLowerCase()
-          }
-        }
-      };
-
+      queryString += `&filters[county][slug]=${filters.county}`;
+      
       if (filters?.town) {
-        queryParams.filters = {
-          ...queryParams.filters,
-          town: {
-            slug: {
-              $eq: filters.town.toLowerCase()
-            }
-          }
-        };
+        queryString += `&filters[town][slug]=${filters.town}`;
       }
     }
 
-    const queryString = `/walks?${new URLSearchParams({
-      populate: JSON.stringify(queryParams.populate),
-      filters: JSON.stringify(queryParams.filters)
-    }).toString()}`;
-
-    console.log('Query String:', queryString);
-
+    console.log('Query:', queryString);
+    
     const response = await strapiAPI.get<StrapiResponse>(queryString);
-
+    
     if (response.data?.data) {
       const walks = response.data.data;
-
-      if (walks.length > 0) {
-        console.log('Sample Walk:', {
-          id: walks[0].id,
-          title: walks[0].attributes?.Title,
-          county: walks[0].attributes?.county?.data?.attributes?.name,
-          town: walks[0].attributes?.town?.data?.attributes?.name
-        });
-      }
-
       console.log(`Found ${walks.length} walks`);
       console.groupEnd();
       return walks;
@@ -192,29 +153,9 @@ export const fetchWalkBySlug = async (slug: string) => {
     console.group('Fetching Walk by Slug');
     console.log('Slug:', slug);
 
-    const queryParams = {
-      populate: {
-        image: true,
-        county: {
-          fields: ['name', 'slug']
-        },
-        town: {
-          fields: ['name', 'slug']
-        }
-      },
-      filters: {
-        slug: {
-          $eq: slug
-        }
-      }
-    };
-
-    const queryString = `/walks?${new URLSearchParams({
-      populate: JSON.stringify(queryParams.populate),
-      filters: JSON.stringify(queryParams.filters)
-    }).toString()}`;
-
-    const response = await strapiAPI.get<StrapiResponse>(queryString);
+    const response = await strapiAPI.get<StrapiResponse>(
+      `/walks?filters[slug]=${slug}&populate=*`
+    );
 
     if (!response.data?.data?.[0]) {
       throw new Error('Walk not found');
@@ -236,39 +177,10 @@ export const getRelatedWalks = async (currentWalk: Walk) => {
     const townSlug = currentWalk.attributes?.town?.data?.attributes?.slug;
     if (!townSlug) return [];
 
-    const queryParams = {
-      populate: {
-        image: true,
-        county: {
-          fields: ['name', 'slug']
-        },
-        town: {
-          fields: ['name', 'slug']
-        }
-      },
-      filters: {
-        town: {
-          slug: {
-            $eq: townSlug
-          }
-        },
-        id: {
-          $ne: currentWalk.id
-        }
-      },
-      pagination: {
-        limit: 3
-      }
-    };
-
-    const queryString = `/walks?${new URLSearchParams({
-      populate: JSON.stringify(queryParams.populate),
-      filters: JSON.stringify(queryParams.filters),
-      pagination: JSON.stringify(queryParams.pagination)
-    }).toString()}`;
-
-    const response = await strapiAPI.get<StrapiResponse>(queryString);
-
+    const response = await strapiAPI.get<StrapiResponse>(
+      `/walks?filters[town][slug]=${townSlug}&filters[id][$ne]=${currentWalk.id}&populate=*&pagination[limit]=3`
+    );
+    
     if (response.data?.data) {
       return response.data.data;
     }
