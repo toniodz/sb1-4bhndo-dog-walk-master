@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Define the base types
+// Types for Strapi v5 responses
 interface StrapiAttribute {
   data?: {
     id?: number;
@@ -24,7 +24,6 @@ interface StrapiImage {
   } | null;
 }
 
-// Define interfaces to match Strapi response
 interface Walk {
   id: number;
   attributes?: {
@@ -40,6 +39,7 @@ interface Walk {
     image?: StrapiImage;
     createdAt?: string;
     updatedAt?: string;
+    publishedAt?: string;
   };
 }
 
@@ -60,7 +60,7 @@ const baseURL = import.meta.env.PROD
   ? 'https://api.dogwalksnearme.uk/api'
   : `${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/api`;
 
-// Create axios instance with default config
+// Create axios instance
 const strapiAPI = axios.create({
   baseURL,
   headers: {
@@ -70,10 +70,10 @@ const strapiAPI = axios.create({
   timeout: 10000 
 });
 
-// Add request interceptor for debugging
+// Request interceptor
 strapiAPI.interceptors.request.use(
   (config) => {
-    console.group('API Request');
+    console.group('Strapi API Request');
     console.log('URL:', `${config.baseURL}${config.url}`);
     console.log('Method:', config.method?.toUpperCase());
     console.log('Has Auth:', !!config.headers.Authorization);
@@ -86,10 +86,10 @@ strapiAPI.interceptors.request.use(
   }
 );
 
-// Add response interceptor for debugging
+// Response interceptor
 strapiAPI.interceptors.response.use(
   (response) => {
-    console.group('API Response');
+    console.group('Strapi API Response');
     console.log('Status:', response.status);
     console.log('Data Count:', response.data?.data?.length);
     console.groupEnd();
@@ -114,33 +114,54 @@ export const fetchWalks = async (filters?: {
     console.group('Fetching Walks');
     console.log('Filters:', filters);
 
-    // Build populate query
-    const populate = [
-      'image',
-      'county',
-      'town'
-    ];
+    // Build query string for Strapi v5
+    const queryParams = {
+      populate: {
+        image: true,
+        county: {
+          fields: ['name', 'slug']
+        },
+        town: {
+          fields: ['name', 'slug']
+        }
+      },
+      filters: {}
+    };
 
-    // Build query string
-    let queryString = `/walks?populate=${populate.join(',')}`;
-    
-    // Add filters if provided
     if (filters?.county) {
-      queryString += `&filters[county][data][attributes][slug][$eq]=${filters.county}`;
-      
+      queryParams.filters = {
+        ...queryParams.filters,
+        county: {
+          slug: {
+            $eq: filters.county.toLowerCase()
+          }
+        }
+      };
+
       if (filters?.town) {
-        queryString += `&filters[town][data][attributes][slug][$eq]=${filters.town}`;
+        queryParams.filters = {
+          ...queryParams.filters,
+          town: {
+            slug: {
+              $eq: filters.town.toLowerCase()
+            }
+          }
+        };
       }
     }
 
-    console.log('Query:', queryString);
-    
+    const queryString = `/walks?${new URLSearchParams({
+      populate: JSON.stringify(queryParams.populate),
+      filters: JSON.stringify(queryParams.filters)
+    }).toString()}`;
+
+    console.log('Query String:', queryString);
+
     const response = await strapiAPI.get<StrapiResponse>(queryString);
-    
+
     if (response.data?.data) {
       const walks = response.data.data;
-      
-      // Log sample data if available
+
       if (walks.length > 0) {
         console.log('Sample Walk:', {
           id: walks[0].id,
@@ -171,9 +192,29 @@ export const fetchWalkBySlug = async (slug: string) => {
     console.group('Fetching Walk by Slug');
     console.log('Slug:', slug);
 
-    const response = await strapiAPI.get<StrapiResponse>(
-      `/walks?filters[slug][$eq]=${slug}&populate=*`
-    );
+    const queryParams = {
+      populate: {
+        image: true,
+        county: {
+          fields: ['name', 'slug']
+        },
+        town: {
+          fields: ['name', 'slug']
+        }
+      },
+      filters: {
+        slug: {
+          $eq: slug
+        }
+      }
+    };
+
+    const queryString = `/walks?${new URLSearchParams({
+      populate: JSON.stringify(queryParams.populate),
+      filters: JSON.stringify(queryParams.filters)
+    }).toString()}`;
+
+    const response = await strapiAPI.get<StrapiResponse>(queryString);
 
     if (!response.data?.data?.[0]) {
       throw new Error('Walk not found');
@@ -195,12 +236,41 @@ export const getRelatedWalks = async (currentWalk: Walk) => {
     const townSlug = currentWalk.attributes?.town?.data?.attributes?.slug;
     if (!townSlug) return [];
 
-    const queryString = `/walks?populate=*&filters[town][data][attributes][slug][$eq]=${townSlug}&filters[id][$ne]=${currentWalk.id}&pagination[limit]=3`;
-    
+    const queryParams = {
+      populate: {
+        image: true,
+        county: {
+          fields: ['name', 'slug']
+        },
+        town: {
+          fields: ['name', 'slug']
+        }
+      },
+      filters: {
+        town: {
+          slug: {
+            $eq: townSlug
+          }
+        },
+        id: {
+          $ne: currentWalk.id
+        }
+      },
+      pagination: {
+        limit: 3
+      }
+    };
+
+    const queryString = `/walks?${new URLSearchParams({
+      populate: JSON.stringify(queryParams.populate),
+      filters: JSON.stringify(queryParams.filters),
+      pagination: JSON.stringify(queryParams.pagination)
+    }).toString()}`;
+
     const response = await strapiAPI.get<StrapiResponse>(queryString);
-    
+
     if (response.data?.data) {
-      return response.data.data.slice(0, 3);
+      return response.data.data;
     }
     return [];
   } catch (error) {
@@ -208,3 +278,5 @@ export const getRelatedWalks = async (currentWalk: Walk) => {
     return [];
   }
 };
+
+export default strapiAPI;
