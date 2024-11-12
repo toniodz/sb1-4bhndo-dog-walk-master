@@ -5,33 +5,61 @@ import { fetchWalks, fetchCounties, fetchTowns } from '../api/strapi';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
 
+// Types from your Strapi structure
 interface County {
   id: number;
-  attributes?: {
-    name?: string;
-    slug?: string;
+  attributes: {
+    name: string;
+    slug: string;
+    type: string;
+    country: string;
+    description?: any;
   };
 }
 
 interface Town {
   id: number;
-  attributes?: {
-    name?: string;
-    slug?: string;
+  attributes: {
+    name: string;
+    slug: string;
+    postcode_area: string;
+    type: string;
+    description?: any;
   };
 }
 
 interface Walk {
   id: number;
-  attributes?: {
-    Title?: string;
-    slug?: string;
-    address?: string;
-    duration?: string;
+  attributes: {
+    Title: string;
+    slug: string;
+    rating: number | null;
+    address: string;
+    duration: string;
+    difficulty: string;
+    overview?: string;
+    featured: boolean;
+    county?: {
+      data?: {
+        id: number;
+        attributes: County;
+      };
+    };
+    town?: {
+      data?: {
+        id: number;
+        attributes: Town;
+      };
+    };
     image?: {
       data?: {
         attributes?: {
           url?: string;
+          formats?: {
+            medium?: {
+              url?: string;
+            };
+          };
         };
       };
     };
@@ -50,20 +78,19 @@ const CategoryPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         if (!county) {
-          // On main page, just load counties
+          // On main page, load counties
           const countiesData = await fetchCounties();
-          setCounties(countiesData || []);
+          setCounties(countiesData);
         } else {
           // Load walks filtered by county/town
           const filters = {
-            county: county?.toLowerCase(),
-            ...(town && { town: town.toLowerCase() })
+            county: county,
+            ...(town && { town: town })
           };
-          
           const walksData = await fetchWalks(filters);
-          setWalks(walksData || []);
+          setWalks(walksData);
         }
       } catch (err) {
         console.error('Error loading data:', err);
@@ -75,6 +102,38 @@ const CategoryPage: React.FC = () => {
 
     loadData();
   }, [county, town]);
+
+  const getBreadcrumbItems = () => {
+    const items = [
+      { label: 'Dog Walks', path: '/dog-walks' }
+    ];
+
+    if (county) {
+      items.push({
+        label: `Dog Walks in ${county.charAt(0).toUpperCase() + county.slice(1)}`,
+        path: `/dog-walks/${county.toLowerCase()}`
+      });
+
+      if (town) {
+        items.push({
+          label: `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}`,
+          path: `/dog-walks/${county.toLowerCase()}/${town.toLowerCase()}`
+        });
+      }
+    }
+
+    return items;
+  };
+
+  const getPageTitle = () => {
+    if (town && county) {
+      return `Dog Walks in ${town.charAt(0).toUpperCase() + town.slice(1)}, ${county.charAt(0).toUpperCase() + county.slice(1)}`;
+    }
+    if (county) {
+      return `Dog Walks in ${county.charAt(0).toUpperCase() + county.slice(1)}`;
+    }
+    return 'Dog Walks by Location';
+  };
 
   if (loading) {
     return (
@@ -89,34 +148,32 @@ const CategoryPage: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto">
         <Helmet>
-          <title>Dog Walks by County | Dog Walks Near Me</title>
+          <title>Dog Walks by Location | Dog Walks Near Me</title>
           <meta 
             name="description" 
-            content="Discover dog-friendly walks across different counties. Find the perfect walking route for you and your furry friend." 
+            content="Discover dog-friendly walks across different locations. Find the perfect walking route for you and your furry friend." 
           />
         </Helmet>
 
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">Dog Walks by County</h1>
+        <Breadcrumbs items={getBreadcrumbItems()} />
+        
+        <h1 className="text-4xl font-bold text-gray-800 mb-8">Dog Walks by Location</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {counties.map((county) => {
-            // Only render if we have the required data
-            if (!county?.attributes?.slug || !county?.attributes?.name) {
-              return null;
-            }
-
-            return (
-              <Link
-                key={county.id}
-                to={`/dog-walks/${county.attributes.slug}`}
-                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-              >
-                <h2 className="text-xl font-semibold">
-                  Dog Walks in {county.attributes.name}
-                </h2>
-              </Link>
-            );
-          })}
+          {counties.map((county) => (
+            <Link
+              key={county.id}
+              to={`/dog-walks/${county.attributes.slug}`}
+              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+            >
+              <h2 className="text-xl font-semibold">
+                Dog Walks in {county.attributes.name}
+              </h2>
+              <p className="mt-2 text-gray-600">
+                Find dog-friendly walks in {county.attributes.name}
+              </p>
+            </Link>
+          ))}
         </div>
       </div>
     );
@@ -126,15 +183,17 @@ const CategoryPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto">
       <Helmet>
-        <title>
-          Dog Walks in {town || county} | Dog Walks Near Me
-        </title>
+        <title>{getPageTitle()} | Dog Walks Near Me</title>
+        <meta 
+          name="description" 
+          content={`Discover dog-friendly walks in ${county}${town ? ` and ${town}` : ''}. Find the perfect walking route for you and your furry friend.`} 
+        />
       </Helmet>
 
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">
-        Dog Walks in {town ? `${town}, ${county}` : county}
-      </h1>
+      <Breadcrumbs items={getBreadcrumbItems()} />
 
+      <h1 className="text-4xl font-bold text-gray-800 mb-8">{getPageTitle()}</h1>
+        
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative mb-6">
           {error}
@@ -142,45 +201,41 @@ const CategoryPage: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {walks.map((walk) => {
-          // Only render if we have the required data
-          if (!walk?.attributes?.slug || !walk?.attributes?.Title) {
-            return null;
-          }
-
-          return (
-            <Link 
-              key={walk.id}
-              to={`/walks/${walk.attributes.slug}`}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all"
-            >
-              {walk.attributes.image?.data?.attributes?.url && (
-                <img 
-                  src={walk.attributes.image.data.attributes.url}
-                  alt={walk.attributes.Title}
-                  className="w-full h-48 object-cover"
-                />
-              )}
-              <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">
-                  {walk.attributes.Title}
-                </h2>
-                {walk.attributes.address && (
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    <span>{walk.attributes.address}</span>
-                  </div>
-                )}
-                {walk.attributes.duration && (
-                  <div className="flex items-center text-gray-600">
-                    <Clock className="h-4 w-4 mr-2" />
-                    <span>{walk.attributes.duration}</span>
-                  </div>
-                )}
+        {walks.map((walk) => (
+          <Link 
+            key={walk.id}
+            to={`/walks/${walk.attributes.slug}`}
+            className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            {walk.attributes.image?.data?.attributes?.url && (
+              <img 
+                src={walk.attributes.image.data.attributes.url}
+                alt={`${walk.attributes.Title} dog walking route`}
+                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+            )}
+            <div className="p-4">
+              <h2 className="text-xl font-semibold mb-2">
+                {walk.attributes.Title}
+              </h2>
+              <div className="flex items-center text-gray-600 mb-2">
+                <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="text-sm truncate">{walk.attributes.address}</span>
               </div>
-            </Link>
-          );
-        })}
+              <div className="flex items-center text-gray-600 mb-2">
+                <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="text-sm">{walk.attributes.duration}</span>
+              </div>
+              {walk.attributes.rating && (
+                <div className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                  <Star className="h-4 w-4 mr-1" />
+                  {walk.attributes.rating.toFixed(1)}
+                </div>
+              )}
+            </div>
+          </Link>
+        ))}
       </div>
 
       {walks.length === 0 && !error && (
