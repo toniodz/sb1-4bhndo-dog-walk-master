@@ -171,6 +171,77 @@ export const fetchWalkBySlug = async (slug: string) => {
   }
 };
 
+// In strapi.ts - Add these new fetch functions
+
+export const fetchLocations = async () => {
+  try {
+    const response = await strapiAPI.get<StrapiResponse>('/walks?populate=*');
+    
+    if (response.data?.data) {
+      // Extract unique counties and towns from walks
+      const locations = response.data.data.reduce((acc, walk) => {
+        const region = walk.attributes?.Region;
+        const town = walk.attributes?.Town;
+        
+        if (region && !acc.counties.includes(region)) {
+          acc.counties.push(region);
+        }
+        
+        if (town && !acc.towns.includes(town)) {
+          acc.towns.push(town);
+        }
+        
+        return acc;
+      }, { counties: [], towns: [] });
+      
+      console.log('Found locations:', locations);
+      return locations;
+    }
+    return { counties: [], towns: [] };
+  } catch (error) {
+    console.error('Error fetching locations:', error);
+    return { counties: [], towns: [] };
+  }
+};
+
+export const fetchWalks = async (filters?: {
+  county?: string;
+  town?: string;
+}) => {
+  try {
+    console.group('Fetching Walks');
+    console.log('Filters:', filters);
+
+    // Start with base query
+    let queryString = '/walks?populate=*';
+    
+    // Add filters based on attributes
+    if (filters?.county) {
+      queryString += `&filters[Region][$eqi]=${filters.county}`;
+      
+      if (filters?.town) {
+        queryString += `&filters[Town][$eqi]=${filters.town}`;
+      }
+    }
+
+    console.log('Query:', queryString);
+    
+    const response = await strapiAPI.get<StrapiResponse>(queryString);
+    
+    if (response.data?.data) {
+      const walks = response.data.data;
+      console.log(`Found ${walks.length} walks`);
+      return walks;
+    }
+
+    console.log('No walks found');
+    return [];
+  } catch (error) {
+    console.error('Error fetching walks:', error);
+    return [];
+  }
+};
+
 // Fetch related walks
 export const getRelatedWalks = async (currentWalk: Walk) => {
   try {

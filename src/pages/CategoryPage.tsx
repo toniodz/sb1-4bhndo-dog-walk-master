@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MapPin, Clock, Star } from 'lucide-react';
-import { fetchWalks } from '../api/strapi';
+import { fetchWalks, fetchLocations } from '../api/strapi';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
 
@@ -15,61 +15,68 @@ interface Walk {
     duration?: string;
     difficulty?: string;
     overview?: string;
-    county?: {
-      data?: {
-        attributes?: {
-          name?: string;
-          slug?: string;
-        }
-      } | null;
-    } | null;
-    town?: {
-      data?: {
-        attributes?: {
-          name?: string;
-          slug?: string;
-        }
-      } | null;
-    } | null;
+    Town?: string;
+    Region?: string;
     image?: {
       data?: {
         attributes?: {
           url?: string;
         };
-      } | null;
+      };
     };
   };
 }
 
+interface Locations {
+  counties: string[];
+  towns: string[];
+}
+
 const CategoryPage: React.FC = () => {
   const { county, town } = useParams<{ county?: string; town?: string }>();
+  const navigate = useNavigate();
   const [walks, setWalks] = useState<Walk[]>([]);
+  const [locations, setLocations] = useState<Locations>({ counties: [], towns: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Load locations and validate current route
   useEffect(() => {
-    const loadWalks = async () => {
+    const validateRoute = async () => {
       try {
         setLoading(true);
-        setError(null);
-        
+        const locationData = await fetchLocations();
+        setLocations(locationData);
+
+        // Validate if current county/town exists in our data
+        if (county && !locationData.counties.map(c => c.toLowerCase()).includes(county.toLowerCase())) {
+          navigate('/dog-walks', { replace: true });
+          return;
+        }
+
+        if (town && !locationData.towns.map(t => t.toLowerCase()).includes(town.toLowerCase())) {
+          navigate(`/dog-walks/${county}`, { replace: true });
+          return;
+        }
+
+        // Load walks after location validation
         const filters = {
-          county: county?.toLowerCase(),
-          town: town?.toLowerCase()
+          ...(county ? { county: county.toLowerCase() } : {}),
+          ...(town ? { town: town.toLowerCase() } : {})
         };
-        
+
         const fetchedWalks = await fetchWalks(filters);
-        setWalks(Array.isArray(fetchedWalks) ? fetchedWalks : []);
+        setWalks(fetchedWalks);
       } catch (err) {
-        console.error('Error loading walks:', err);
-        setError('Failed to load walks. Please try again later.');
+        console.error('Error loading data:', err);
+        setError('Failed to load content. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    loadWalks();
-  }, [county, town]);
+    validateRoute();
+  }, [county, town, navigate]);
 
   const getBreadcrumbItems = () => {
     const items = [
@@ -111,6 +118,40 @@ const CategoryPage: React.FC = () => {
     );
   }
 
+  // Show available locations on the main dog walks page
+  if (!county && !town) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <Helmet>
+          <title>Dog Walks Near Me | Find Local Dog Walking Routes</title>
+          <meta 
+            name="description" 
+            content="Discover dog-friendly walks across the UK. Find the perfect walking route for you and your furry friend in your local area." 
+          />
+        </Helmet>
+
+        <Breadcrumbs items={getBreadcrumbItems()} />
+
+        <h1 className="text-4xl font-bold text-gray-800 mb-8">Dog Walks by Location</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {locations.counties.map((countyName) => (
+            <Link
+              key={countyName}
+              to={`/dog-walks/${countyName.toLowerCase()}`}
+              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+            >
+              <h2 className="text-xl font-semibold">Dog Walks in {countyName}</h2>
+              <p className="text-gray-600 mt-2">
+                Discover dog-friendly walks in {countyName}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Helmet>
@@ -134,15 +175,9 @@ const CategoryPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {walks.map((walk) => {
-            // Skip rendering if required properties are missing
             if (!walk?.attributes?.slug || !walk?.attributes?.Title) {
               return null;
             }
-
-            // Safely access nested properties
-            const townName = walk?.attributes?.town?.data?.attributes?.name;
-            const countyName = walk?.attributes?.county?.data?.attributes?.name;
-            const imageUrl = walk?.attributes?.image?.data?.attributes?.url;
 
             return (
               <Link 
@@ -150,9 +185,9 @@ const CategoryPage: React.FC = () => {
                 to={`/walks/${walk.attributes.slug}`}
                 className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
               >
-                {imageUrl && (
+                {walk.attributes.image?.data?.attributes?.url && (
                   <img 
-                    src={imageUrl}
+                    src={walk.attributes.image.data.attributes.url}
                     alt={`${walk.attributes.Title} dog walking route`}
                     className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
@@ -160,11 +195,12 @@ const CategoryPage: React.FC = () => {
                 )}
                 <div className="p-4">
                   <h2 className="text-xl font-semibold mb-2">{walk.attributes.Title}</h2>
-                  {(townName || countyName) && (
+                  {walk.attributes.Town && (
                     <div className="flex items-center text-gray-600 mb-2">
                       <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
                       <span className="text-sm truncate">
-                        {[townName, countyName].filter(Boolean).join(', ')}
+                        {walk.attributes.Town}
+                        {walk.attributes.Region && `, ${walk.attributes.Region}`}
                       </span>
                     </div>
                   )}
