@@ -103,25 +103,43 @@ export const fetchWalks = async (filters?: {
   town?: string;
 }) => {
   try {
+    console.group('Fetching Walks');
+    console.log('Filters:', filters);
+
+    // Start with base query and populate
     let queryString = '/walks?populate=*';
     
     if (filters?.county) {
-      queryString += `&filters[county][slug][$eq]=${filters.county}`;
+      // Filter by county name
+      queryString += `&filters[county][name][$eq]=${filters.county}`;
       
       if (filters?.town) {
-        queryString += `&filters[town][slug][$eq]=${filters.town}`;
+        // Filter by town name
+        queryString += `&filters[town][name][$eq]=${filters.town}`;
       }
     }
 
-    console.log('Fetching walks with query:', queryString);
+    console.log('Final query string:', queryString);
     
-    const response = await strapiAPI.get<StrapiResponse<Walk>>(queryString);
-    return response.data.data;
+    const response = await strapiAPI.get(queryString);
+    console.log('API Response:', response.data);
+    
+    if (response.data?.data) {
+      const walks = response.data.data;
+      console.log(`Found ${walks.length} walks with filters:`, filters);
+      return walks;
+    }
+
+    console.log('No walks found');
+    console.groupEnd();
+    return [];
   } catch (error) {
     console.error('Error fetching walks:', error);
+    console.groupEnd();
     return [];
   }
 };
+
 
 export const fetchWalkBySlug = async (slug: string) => {
   try {
