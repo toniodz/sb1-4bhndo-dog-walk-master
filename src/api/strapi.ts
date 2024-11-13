@@ -1,63 +1,57 @@
 import axios from 'axios';
 
-// Interfaces
+// Type Definitions
 interface County {
   id: number;
-  documentId: string;
   name: string;
   slug: string;
   type: string;
   country: string;
-  description?: any;
 }
 
 interface Town {
   id: number;
-  documentId: string;
   name: string;
   slug: string;
   postcode_area: string;
   type: string;
-  description?: any;
 }
 
 interface Walk {
   id: number;
   documentId: string;
-  attributes: {
-    Title: string;
-    slug: string;
-    rating: number | null;
-    address: string;
-    overview: string | null;
-    website: string | null;
-    featured: boolean;
-    duration: string;
-    difficulty: string;
-    coordinates?: any;
-    county?: {
-      data?: {
-        id: number;
-        attributes: County;
-      };
-    };
-    town?: {
-      data?: {
-        id: number;
-        attributes: Town;
-      };
-    };
-    image?: {
-      data?: {
-        attributes?: {
-          url?: string;
-          formats?: {
-            medium?: {
-              url?: string;
-            };
+  Title: string;
+  slug: string;
+  rating: number | null;
+  address: string;
+  overview: string | null;
+  website: string | null;
+  featured: boolean;
+  duration: string;
+  difficulty: string;
+  coordinates?: any;
+  image?: {
+    data?: {
+      attributes?: {
+        url?: string;
+        formats?: {
+          medium?: {
+            url?: string;
           };
         };
       };
+    };
+  };
+  county?: {
+    data?: {
+      id: number;
+      attributes: County;
+    };
+  };
+  town?: {
+    data?: {
+      id: number;
+      attributes: Town;
     };
   };
 }
@@ -74,12 +68,11 @@ interface StrapiResponse<T> {
   };
 }
 
-// Define the base URL based on environment
+// Base API Configuration
 const baseURL = import.meta.env.PROD 
   ? 'https://api.dogwalksnearme.uk/api'
   : `${import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}/api`;
 
-// Create axios instance
 const strapiAPI = axios.create({
   baseURL,
   headers: {
@@ -89,10 +82,10 @@ const strapiAPI = axios.create({
   timeout: 10000 
 });
 
-// Request interceptor
+// Debug Interceptors
 strapiAPI.interceptors.request.use(
   (config) => {
-    console.group('Strapi API Request');
+    console.group('API Request');
     console.log('URL:', `${config.baseURL}${config.url}`);
     console.log('Method:', config.method?.toUpperCase());
     console.groupEnd();
@@ -104,10 +97,9 @@ strapiAPI.interceptors.request.use(
   }
 );
 
-// Response interceptor
 strapiAPI.interceptors.response.use(
   (response) => {
-    console.group('Strapi API Response');
+    console.group('API Response');
     console.log('Status:', response.status);
     console.log('Data Count:', response.data?.data?.length);
     console.groupEnd();
@@ -123,45 +115,92 @@ strapiAPI.interceptors.response.use(
   }
 );
 
-// Fetch all walks with optional filters
+// API Functions
 export const fetchWalks = async (filters?: {
   county?: string;
   town?: string;
+  featured?: boolean;
 }) => {
   try {
-    console.group('Fetching Walks');
-    console.log('Filters:', filters);
-
     let queryString = '/walks?populate=*';
     
-    if (filters?.county) {
-      queryString += `&filters[county][name][$eq]=${filters.county}`;
+    // Add filters
+    if (filters) {
+      if (filters.featured) {
+        queryString += '&filters[featured][$eq]=true';
+      }
       
-      if (filters?.town) {
-        queryString += `&filters[town][name][$eq]=${filters.town}`;
+      if (filters.county) {
+        queryString += `&filters[county][slug][$eq]=${filters.county}`;
+        
+        if (filters.town) {
+          queryString += `&filters[town][slug][$eq]=${filters.town}`;
+        }
       }
     }
 
-    console.log('Query:', queryString);
+    console.log('Fetching walks:', queryString);
     
     const response = await strapiAPI.get<StrapiResponse<Walk>>(queryString);
-    
-    if (response.data?.data) {
-      const walks = response.data.data;
-      console.log(`Found ${walks.length} walks`);
-      console.groupEnd();
-      return walks;
-    }
-
-    console.log('No walks found');
-    console.groupEnd();
-    return [];
+    return response.data?.data || [];
   } catch (error) {
     console.error('Error fetching walks:', error);
-    console.groupEnd();
     return [];
   }
 };
+
+export const fetchCounties = async () => {
+  try {
+    console.log('Fetching counties');
+    const response = await strapiAPI.get<StrapiResponse<County>>('/counties');
+    return response.data?.data || [];
+  } catch (error) {
+    console.error('Error fetching counties:', error);
+    return [];
+  }
+};
+
+export const fetchTowns = async (countySlug?: string) => {
+  try {
+    let queryString = '/towns';
+    if (countySlug) {
+      queryString += `?filters[county][slug][$eq]=${countySlug}`;
+    }
+    console.log('Fetching towns:', queryString);
+    
+    const response = await strapiAPI.get<StrapiResponse<Town>>(queryString);
+    return response.data?.data || [];
+  } catch (error) {
+    console.error('Error fetching towns:', error);
+    return [];
+  }
+};
+
+export const fetchWalkBySlug = async (slug: string) => {
+  try {
+    console.log('Fetching walk by slug:', slug);
+    
+    const response = await strapiAPI.get<StrapiResponse<Walk>>(
+      `/walks?filters[slug][$eq]=${slug}&populate=*`
+    );
+
+    if (!response.data?.data?.[0]) {
+      throw new Error('Walk not found');
+    }
+
+    return response.data.data[0];
+  } catch (error) {
+    console.error('Error fetching walk:', error);
+    return null;
+  }
+};
+
+// Helper function for featured walks (used on home page)
+export const fetchFeaturedWalks = async () => {
+  return fetchWalks({ featured: true });
+};
+
+export default strapiAPI;
 
 // Fetch all counties
 export const fetchCounties = async () => {
