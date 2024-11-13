@@ -68,33 +68,35 @@ interface Walk {
 
 const CategoryPage: React.FC = () => {
   const { county, town } = useParams<{ county?: string; town?: string }>();
-  const [walks, setWalks] = useState<Walk[]>([]);
+  const [walks, setWalks] = useState<any[]>([]);
   const [counties, setCounties] = useState<County[]>([]);
+  const [towns, setTowns] = useState<Town[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        setError(null);
 
         if (!county) {
-          // On main page, load counties
+          // On main page, just load counties
           const countiesData = await fetchCounties();
           setCounties(countiesData);
         } else {
-          // Load walks filtered by county/town
-          const filters = {
-            county: county,
-            ...(town && { town: town })
-          };
-          const walksData = await fetchWalks(filters);
+          // Load walks and towns for the county
+          const [walksData, townsData] = await Promise.all([
+            fetchWalks({
+              county: county,
+              ...(town && { town })
+            }),
+            fetchTowns(county)
+          ]);
+          
           setWalks(walksData);
+          setTowns(townsData);
         }
       } catch (err) {
         console.error('Error loading data:', err);
-        setError('Failed to load content. Please try again later.');
       } finally {
         setLoading(false);
       }
