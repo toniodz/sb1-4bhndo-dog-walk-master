@@ -115,89 +115,83 @@ strapiAPI.interceptors.response.use(
   }
 );
 
-// API Functions
-const api = {
-  // Fetch walks with optional filters
-  fetchWalks: async (filters?: {
-    county?: string;
-    town?: string;
-    featured?: boolean;
-  }) => {
-    try {
-      let queryString = '/walks?populate=*';
+// Export individual functions for direct import
+export const fetchWalks = async (filters?: {
+  county?: string;
+  town?: string;
+  featured?: boolean;
+}) => {
+  try {
+    let queryString = '/walks?populate=*';
+    
+    if (filters) {
+      if (filters.featured) {
+        queryString += '&filters[featured][$eq]=true';
+      }
       
-      if (filters) {
-        if (filters.featured) {
-          queryString += '&filters[featured][$eq]=true';
-        }
+      if (filters.county) {
+        queryString += `&filters[county][slug][$eq]=${filters.county}`;
         
-        if (filters.county) {
-          queryString += `&filters[county][slug][$eq]=${filters.county}`;
-          
-          if (filters.town) {
-            queryString += `&filters[town][slug][$eq]=${filters.town}`;
-          }
+        if (filters.town) {
+          queryString += `&filters[town][slug][$eq]=${filters.town}`;
         }
       }
-
-      console.log('Fetching walks:', queryString);
-      
-      const response = await strapiAPI.get<StrapiResponse<Walk>>(queryString);
-      return response.data?.data || [];
-    } catch (error) {
-      console.error('Error fetching walks:', error);
-      return [];
     }
-  },
 
-  // Fetch all counties
-  fetchCounties: async () => {
-    try {
-      const response = await strapiAPI.get<StrapiResponse<County>>('/counties');
-      return response.data?.data || [];
-    } catch (error) {
-      console.error('Error fetching counties:', error);
-      return [];
-    }
-  },
-
-  // Fetch towns, optionally filtered by county
-  fetchTowns: async (countySlug?: string) => {
-    try {
-      let queryString = '/towns';
-      if (countySlug) {
-        queryString += `?filters[county][slug][$eq]=${countySlug}`;
-      }
-      const response = await strapiAPI.get<StrapiResponse<Town>>(queryString);
-      return response.data?.data || [];
-    } catch (error) {
-      console.error('Error fetching towns:', error);
-      return [];
-    }
-  },
-
-  // Fetch a single walk by slug
-  fetchWalkBySlug: async (slug: string) => {
-    try {
-      const response = await strapiAPI.get<StrapiResponse<Walk>>(
-        `/walks?filters[slug][$eq]=${slug}&populate=*`
-      );
-
-      if (!response.data?.data?.[0]) {
-        throw new Error('Walk not found');
-      }
-
-      return response.data.data[0];
-    } catch (error) {
-      console.error('Error fetching walk:', error);
-      return null;
-    }
-  },
-
-  // Fetch featured walks
-  fetchFeaturedWalks: async () => {
-    return api.fetchWalks({ featured: true });
+    console.log('Fetching walks:', queryString);
+    
+    const response = await strapiAPI.get<StrapiResponse<Walk>>(queryString);
+    return response.data?.data || [];
+  } catch (error) {
+    console.error('Error fetching walks:', error);
+    return [];
   }
 };
 
-export default api;
+export const fetchCounties = async () => {
+  try {
+    const response = await strapiAPI.get<StrapiResponse<County>>('/counties');
+    return response.data?.data || [];
+  } catch (error) {
+    console.error('Error fetching counties:', error);
+    return [];
+  }
+};
+
+export const fetchTowns = async (countySlug?: string) => {
+  try {
+    let queryString = '/towns';
+    if (countySlug) {
+      queryString += `?filters[county][slug][$eq]=${countySlug}`;
+    }
+    const response = await strapiAPI.get<StrapiResponse<Town>>(queryString);
+    return response.data?.data || [];
+  } catch (error) {
+    console.error('Error fetching towns:', error);
+    return [];
+  }
+};
+
+export const fetchWalkBySlug = async (slug: string) => {
+  try {
+    const response = await strapiAPI.get<StrapiResponse<Walk>>(
+      `/walks?filters[slug][$eq]=${slug}&populate=*`
+    );
+
+    if (!response.data?.data?.[0]) {
+      throw new Error('Walk not found');
+    }
+
+    return response.data.data[0];
+  } catch (error) {
+    console.error('Error fetching walk:', error);
+    return null;
+  }
+};
+
+export const fetchFeaturedWalks = async () => {
+  return fetchWalks({ featured: true });
+};
+
+// Also export the API instance
+export default strapiAPI;
