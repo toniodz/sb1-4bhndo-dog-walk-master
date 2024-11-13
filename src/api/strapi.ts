@@ -3,19 +3,17 @@ import axios from 'axios';
 // Type Definitions
 interface County {
   id: number;
-  documentId: string;
   name: string;
   slug: string;
   type: string;
   country: string;
-  description?: any;
 }
 
 interface Town {
   id: number;
-  documentId: string;
   name: string;
   slug: string;
+  postcode_area: string;
   type: string;
 }
 
@@ -31,15 +29,7 @@ interface Walk {
   featured: boolean;
   duration: string;
   difficulty: string;
-  coordinates: any;
-  postcode: string;
-  county: County;
-  town: Town;
-  Terrain2?: string[];
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  locale: string | null;
+  coordinates?: any;
   image?: {
     data?: {
       attributes?: {
@@ -50,6 +40,18 @@ interface Walk {
           };
         };
       };
+    };
+  };
+  county?: {
+    data?: {
+      id: number;
+      attributes: County;
+    };
+  };
+  town?: {
+    data?: {
+      id: number;
+      attributes: Town;
     };
   };
 }
@@ -84,10 +86,7 @@ const strapiAPI = axios.create({
 // Request Interceptor
 strapiAPI.interceptors.request.use(
   (config) => {
-    console.log('API Request:', {
-      url: `${config.baseURL}${config.url}`,
-      method: config.method?.toUpperCase()
-    });
+    console.log('API Request:', `${config.baseURL}${config.url}`);
     return config;
   },
   (error) => {
@@ -116,14 +115,14 @@ strapiAPI.interceptors.response.use(
   }
 );
 
-// Fetch walks with optional filters
+// Export individual functions for direct import
 export const fetchWalks = async (filters?: {
   county?: string;
   town?: string;
   featured?: boolean;
 }) => {
   try {
-    let queryString = '/walks?populate=deep';
+    let queryString = '/walks?populate=*';
     
     if (filters) {
       if (filters.featured) {
@@ -131,10 +130,10 @@ export const fetchWalks = async (filters?: {
       }
       
       if (filters.county) {
-        queryString += `&filters[county][name][$eq]=${filters.county}`;
+        queryString += `&filters[county][slug][$eq]=${filters.county}`;
         
         if (filters.town) {
-          queryString += `&filters[town][name][$eq]=${filters.town}`;
+          queryString += `&filters[town][slug][$eq]=${filters.town}`;
         }
       }
     }
@@ -149,7 +148,6 @@ export const fetchWalks = async (filters?: {
   }
 };
 
-// Fetch all counties
 export const fetchCounties = async () => {
   try {
     const response = await strapiAPI.get<StrapiResponse<County>>('/counties');
@@ -160,12 +158,11 @@ export const fetchCounties = async () => {
   }
 };
 
-// Fetch towns, optionally filtered by county
-export const fetchTowns = async (countyName?: string) => {
+export const fetchTowns = async (countySlug?: string) => {
   try {
     let queryString = '/towns';
-    if (countyName) {
-      queryString += `?filters[county][name][$eq]=${countyName}`;
+    if (countySlug) {
+      queryString += `?filters[county][slug][$eq]=${countySlug}`;
     }
     const response = await strapiAPI.get<StrapiResponse<Town>>(queryString);
     return response.data?.data || [];
@@ -175,11 +172,10 @@ export const fetchTowns = async (countyName?: string) => {
   }
 };
 
-// Fetch a single walk by slug
 export const fetchWalkBySlug = async (slug: string) => {
   try {
     const response = await strapiAPI.get<StrapiResponse<Walk>>(
-      `/walks?filters[slug][$eq]=${slug}&populate=deep`
+      `/walks?filters[slug][$eq]=${slug}&populate=*`
     );
 
     if (!response.data?.data?.[0]) {
@@ -193,10 +189,9 @@ export const fetchWalkBySlug = async (slug: string) => {
   }
 };
 
-// Fetch featured walks
 export const fetchFeaturedWalks = async () => {
   return fetchWalks({ featured: true });
 };
 
-// Export API instance
+// Also export the API instance
 export default strapiAPI;
