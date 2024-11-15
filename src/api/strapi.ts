@@ -1,12 +1,31 @@
 import axios from 'axios';
 
 // Type Definitions
+interface SEO {
+  metaTitle: string;
+  metaDescription: string;
+}
+
 interface County {
   id: number;
   name: string;
   slug: string;
   type: string;
   country: string;
+  description: string;
+  featured_image: {
+    data?: {
+      attributes?: {
+        url: string;
+        formats?: {
+          medium?: {
+            url: string;
+          };
+        };
+      };
+    };
+  };
+  seo: SEO;
 }
 
 interface Town {
@@ -15,6 +34,20 @@ interface Town {
   slug: string;
   postcode_area: string;
   type: string;
+  description: string;
+  featured_image: {
+    data?: {
+      attributes?: {
+        url: string;
+        formats?: {
+          medium?: {
+            url: string;
+          };
+        };
+      };
+    };
+  };
+  seo: SEO;
 }
 
 interface Walk {
@@ -30,13 +63,14 @@ interface Walk {
   duration: string;
   difficulty: string;
   coordinates?: any;
-  image?: {
+  seo: SEO;
+  featured_image: {
     data?: {
       attributes?: {
-        url?: string;
+        url: string;
         formats?: {
           medium?: {
-            url?: string;
+            url: string;
           };
         };
       };
