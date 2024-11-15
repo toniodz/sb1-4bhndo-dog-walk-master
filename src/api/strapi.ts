@@ -149,14 +149,14 @@ strapiAPI.interceptors.response.use(
   }
 );
 
-// Export individual functions for direct import
+// API Functions
 export const fetchWalks = async (filters?: {
   county?: string;
   town?: string;
   featured?: boolean;
 }) => {
   try {
-    let queryString = '/walks?populate=*';
+    let queryString = '/walks?populate[0]=featured_image&populate[1]=seo&populate[2]=county&populate[3]=town';
     
     if (filters) {
       if (filters.featured) {
@@ -184,7 +184,7 @@ export const fetchWalks = async (filters?: {
 
 export const fetchCounties = async () => {
   try {
-    const response = await strapiAPI.get<StrapiResponse<County>>('/counties');
+    const response = await strapiAPI.get<StrapiResponse<County>>('/counties?populate[0]=featured_image&populate[1]=seo');
     return response.data?.data || [];
   } catch (error) {
     console.error('Error fetching counties:', error);
@@ -194,9 +194,9 @@ export const fetchCounties = async () => {
 
 export const fetchTowns = async (countySlug?: string) => {
   try {
-    let queryString = '/towns';
+    let queryString = '/towns?populate[0]=featured_image&populate[1]=seo';
     if (countySlug) {
-      queryString += `?filters[county][slug][$eq]=${countySlug}`;
+      queryString += `&filters[county][slug][$eq]=${countySlug}`;
     }
     const response = await strapiAPI.get<StrapiResponse<Town>>(queryString);
     return response.data?.data || [];
@@ -209,7 +209,7 @@ export const fetchTowns = async (countySlug?: string) => {
 export const fetchWalkBySlug = async (slug: string) => {
   try {
     const response = await strapiAPI.get<StrapiResponse<Walk>>(
-      `/walks?filters[slug][$eq]=${slug}&populate=*`
+      `/walks?filters[slug][$eq]=${slug}&populate[0]=featured_image&populate[1]=seo&populate[2]=county&populate[3]=town`
     );
 
     if (!response.data?.data?.[0]) {
@@ -227,5 +227,4 @@ export const fetchFeaturedWalks = async () => {
   return fetchWalks({ featured: true });
 };
 
-// Also export the API instance
 export default strapiAPI;
