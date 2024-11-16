@@ -77,17 +77,23 @@ const CategoryPage: React.FC = () => {
     loadData();
   }, [county, town]);
 
-  const getBreadcrumbItems = () => {
-    const items = [
-      { label: 'Dog Walks', path: '/dog-walks' }
-    ];
+  const getBreadcrumbItems = (): { label: string; path: string }[] => {
+    const items = [];
+
+    // Always add the base Dog Walks page
+    items.push({
+      label: 'Dog Walks',
+      path: '/dog-walks'
+    });
 
     if (county && locationData.county) {
+      // Add county level
       items.push({
         label: `Dog Walks in ${locationData.county.name}`,
         path: `/dog-walks/${county}`
       });
 
+      // Add town level if it exists
       if (town && locationData.town) {
         items.push({
           label: `Dog Walks in ${locationData.town.name}`,
