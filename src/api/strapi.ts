@@ -1,52 +1,60 @@
 import axios from 'axios';
 
 // Type Definitions
+interface ImageFormat {
+  url: string;
+  width: number;
+  height: number;
+}
+
+interface Image {
+  id: number;
+  name: string;
+  url: string;
+  formats?: {
+    large?: ImageFormat;
+    small?: ImageFormat;
+    medium?: ImageFormat;
+    thumbnail?: ImageFormat;
+  };
+}
+
 interface SEO {
+  id: number;
   metaTitle: string;
   metaDescription: string;
 }
 
+interface Feature {
+  id: number;
+  documentId: string;
+  name: string;
+  slug: string;
+}
+
 interface County {
   id: number;
+  documentId: string;
   name: string;
   slug: string;
   type: string;
   country: string;
   description: string;
-  featured_image: {
-    data?: {
-      attributes?: {
-        url: string;
-        formats?: {
-          medium?: {
-            url: string;
-          };
-        };
-      };
-    };
-  };
+  image: Image[];
+  gallery?: Image[];
   seo: SEO;
 }
 
 interface Town {
   id: number;
+  documentId: string;
   name: string;
   slug: string;
   postcode_area: string;
   type: string;
   description: string;
-  featured_image: {
-    data?: {
-      attributes?: {
-        url: string;
-        formats?: {
-          medium?: {
-            url: string;
-          };
-        };
-      };
-    };
-  };
+  image: Image[];
+  gallery?: Image[];
   seo: SEO;
 }
 
@@ -63,31 +71,14 @@ interface Walk {
   duration: string;
   difficulty: string;
   coordinates?: any;
+  postcode: string;
+  Terrain2?: string[];
+  features?: Feature[];
+  image: Image[];
+  gallery?: Image[];
   seo: SEO;
-  featured_image: {
-    data?: {
-      attributes?: {
-        url: string;
-        formats?: {
-          medium?: {
-            url: string;
-          };
-        };
-      };
-    };
-  };
-  county?: {
-    data?: {
-      id: number;
-      attributes: County;
-    };
-  };
-  town?: {
-    data?: {
-      id: number;
-      attributes: Town;
-    };
-  };
+  county: County;
+  town: Town;
 }
 
 interface StrapiResponse<T> {
@@ -120,7 +111,10 @@ const strapiAPI = axios.create({
 // Request Interceptor
 strapiAPI.interceptors.request.use(
   (config) => {
-    console.log('API Request:', `${config.baseURL}${config.url}`);
+    console.log('API Request:', {
+      url: `${config.baseURL}${config.url}`,
+      method: config.method?.toUpperCase()
+    });
     return config;
   },
   (error) => {
@@ -156,7 +150,7 @@ export const fetchWalks = async (filters?: {
   featured?: boolean;
 }) => {
   try {
-    let queryString = '/walks?populate[0]=featured_image&populate[1]=seo&populate[2]=county&populate[3]=town';
+    let queryString = '/walks?populate=*';
     
     if (filters) {
       if (filters.featured) {
@@ -184,7 +178,7 @@ export const fetchWalks = async (filters?: {
 
 export const fetchCounties = async () => {
   try {
-    const response = await strapiAPI.get<StrapiResponse<County>>('/counties?populate[0]=featured_image&populate[1]=seo');
+    const response = await strapiAPI.get<StrapiResponse<County>>('/counties?populate=*');
     return response.data?.data || [];
   } catch (error) {
     console.error('Error fetching counties:', error);
@@ -194,7 +188,7 @@ export const fetchCounties = async () => {
 
 export const fetchTowns = async (countySlug?: string) => {
   try {
-    let queryString = '/towns?populate[0]=featured_image&populate[1]=seo';
+    let queryString = '/towns?populate=*';
     if (countySlug) {
       queryString += `&filters[county][slug][$eq]=${countySlug}`;
     }
@@ -209,7 +203,7 @@ export const fetchTowns = async (countySlug?: string) => {
 export const fetchWalkBySlug = async (slug: string) => {
   try {
     const response = await strapiAPI.get<StrapiResponse<Walk>>(
-      `/walks?filters[slug][$eq]=${slug}&populate[0]=featured_image&populate[1]=seo&populate[2]=county&populate[3]=town`
+      `/walks?filters[slug][$eq]=${slug}&populate=*`
     );
 
     if (!response.data?.data?.[0]) {
