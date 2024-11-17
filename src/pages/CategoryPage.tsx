@@ -13,6 +13,15 @@ interface LocationData {
   counties?: County[];
 }
 
+// Helper function to safely get text from rich text field
+const getRichText = (content: any): string => {
+  if (typeof content === 'string') return content;
+  if (Array.isArray(content) && content.length > 0 && content[0]?.children?.[0]?.text) {
+    return content[0].children[0].text;
+  }
+  return '';
+};
+
 const CategoryPage: React.FC = () => {
   const { county, town } = useParams<{ county?: string; town?: string }>();
   const [locationData, setLocationData] = useState<LocationData>({
@@ -80,20 +89,17 @@ const CategoryPage: React.FC = () => {
   const getBreadcrumbItems = (): { label: string; path: string }[] => {
     const items = [];
 
-    // Always add the base Dog Walks page
     items.push({
       label: 'Dog Walks',
       path: '/dog-walks'
     });
 
     if (county && locationData.county) {
-      // Add county level
       items.push({
         label: `Dog Walks in ${locationData.county.name}`,
         path: `/dog-walks/${county}`
       });
 
-      // Add town level if it exists
       if (town && locationData.town) {
         items.push({
           label: `Dog Walks in ${locationData.town.name}`,
@@ -186,7 +192,7 @@ const CategoryPage: React.FC = () => {
                     {county.name}
                   </h2>
                   <p className="text-white/90 line-clamp-2">
-                    {county.description}
+                    {getRichText(county.description)}
                   </p>
                 </div>
               </Link>
@@ -229,7 +235,7 @@ const CategoryPage: React.FC = () => {
               </h1>
               {locationInfo?.description && (
                 <p className="text-lg text-white/90">
-                  {locationInfo.description}
+                  {getRichText(locationInfo.description)}
                 </p>
               )}
             </div>
