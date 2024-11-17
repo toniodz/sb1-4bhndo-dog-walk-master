@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { MapPin, Clock, Star } from 'lucide-react';
 import { fetchWalks, fetchCounties, fetchTowns } from '../api/strapi';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
-import type { County, Town, Walk } from '../api/strapi';
+
+// Define the different SEO types
+interface SEOObject {
+  id: number;
+  metaTitle: string;
+  metaDescription: string;
+}
+
+interface SEOArray extends Array<SEOObject> {}
 
 interface LocationData {
   county?: County | null;
@@ -13,7 +21,7 @@ interface LocationData {
   counties?: County[];
 }
 
-// Helper function to safely get text from rich text field
+// Helper function for rich text
 const getRichText = (content: any): string => {
   if (typeof content === 'string') return content;
   if (Array.isArray(content) && content.length > 0 && content[0]?.children?.[0]?.text) {
@@ -22,8 +30,18 @@ const getRichText = (content: any): string => {
   return '';
 };
 
+// Helper function to get SEO data
+const getSEOData = (seo: SEOArray | SEOObject | undefined) => {
+  if (!seo) return null;
+  if (Array.isArray(seo)) {
+    return seo[0] || null;
+  }
+  return seo;
+};
+
 const CategoryPage: React.FC = () => {
   const { county, town } = useParams<{ county?: string; town?: string }>();
+  const location = useLocation();
   const [locationData, setLocationData] = useState<LocationData>({
     walks: []
   });
@@ -37,11 +55,9 @@ const CategoryPage: React.FC = () => {
         setError(null);
 
         if (!county) {
-          // Counties listing page
           const counties = await fetchCounties();
           setLocationData({ walks: [], counties });
         } else {
-          // County or town page
           const [counties, walks] = await Promise.all([
             fetchCounties(),
             fetchWalks({ county, town })
@@ -86,7 +102,7 @@ const CategoryPage: React.FC = () => {
     loadData();
   }, [county, town]);
 
-  const getBreadcrumbItems = (): { label: string; path: string }[] => {
+  const getBreadcrumbItems = () => {
     const items = [];
 
     items.push({
@@ -111,24 +127,29 @@ const CategoryPage: React.FC = () => {
     return items;
   };
 
-  const getPageTitle = () => {
-    if (locationData.town?.seo.metaTitle) {
-      return locationData.town.seo.metaTitle;
-    }
-    if (locationData.county?.seo.metaTitle) {
-      return locationData.county.seo.metaTitle;
-    }
-    return "Dog Walks Near Me";
-  };
+  const getSEOContent = () => {
+    let seoData;
+    let locationInfo;
 
-  const getMetaDescription = () => {
-    if (locationData.town?.seo.metaDescription) {
-      return locationData.town.seo.metaDescription;
+    if (town && locationData.town) {
+      seoData = getSEOData(locationData.town.seo);
+      locationInfo = locationData.town;
+    } else if (county && locationData.county) {
+      seoData = getSEOData(locationData.county.seo);
+      locationInfo = locationData.county;
     }
-    if (locationData.county?.seo.metaDescription) {
-      return locationData.county.seo.metaDescription;
-    }
-    return "Find dog walks near you";
+
+    const defaultTitle = 'Dog Walks Near Me';
+    const defaultDescription = 'Find dog walks near you';
+    const canonicalUrl = `https://dogwalksnearme.uk${location.pathname}`;
+    const imageUrl = locationInfo?.featured_image?.url || '';
+
+    return {
+      title: seoData?.metaTitle || defaultTitle,
+      description: seoData?.metaDescription || defaultDescription,
+      canonical: canonicalUrl,
+      image: imageUrl
+    };
   };
 
   if (loading) {
@@ -156,6 +177,8 @@ const CategoryPage: React.FC = () => {
     );
   }
 
+  const seo = getSEOContent();
+
   // Counties listing page
   if (!county) {
     return (
@@ -166,6 +189,12 @@ const CategoryPage: React.FC = () => {
             name="description" 
             content="Find dog walks across the UK. Browse by county to discover the perfect walking route for you and your dog."
           />
+          <link rel="canonical" href="https://dogwalksnearme.uk/dog-walks" />
+          <meta property="og:title" content="Dog Walks by Location | Dog Walks Near Me" />
+          <meta property="og:description" content="Find dog walks across the UK. Browse by county to discover the perfect walking route for you and your dog." />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://dogwalksnearme.uk/dog-walks" />
+          <meta name="twitter:card" content="summary_large_image" />
         </Helmet>
 
         <div className="max-w-7xl mx-auto">
@@ -205,13 +234,27 @@ const CategoryPage: React.FC = () => {
 
   // County or Town page
   const locationInfo = locationData.town || locationData.county;
-  const heroImage = locationInfo?.image?.[0]?.url;
+  const heroImage = locationInfo?.featured_image?.url;
 
   return (
     <>
       <Helmet>
-        <title>{getPageTitle()}</title>
-        <meta name="description" content={getMetaDescription()} />
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <link rel="canonical" href={seo.canonical} />
+        
+        {/* OpenGraph tags */}
+        <meta property="og:title" content={seo.title} />
+        <meta property="og:description" content={seo.description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={seo.canonical} />
+        {seo.image && <meta property="og:image" content={seo.image} />}
+        
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo.title} />
+        <meta name="twitter:description" content={seo.description} />
+        {seo.image && <meta name="twitter:image" content={seo.image} />}
       </Helmet>
 
       <div className="max-w-7xl mx-auto">
